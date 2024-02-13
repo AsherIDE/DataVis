@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 from ReadDotFile import  CreateAdjacencyList
-import math
 import pydot
 import numpy as np
+
+from points_on_circle import points_on_circle
 
 FILE_NAME = 'Networks/LesMiserables.dot'
 
@@ -11,16 +12,9 @@ G = pydot.graph_from_dot_file(FILE_NAME)[0]
 # Define the adjacency list
 adjacency_list = CreateAdjacencyList(G.get_edge_list())
 
-# all_nodes = sorted(set(adjacency_list.keys()).union(*adjacency_list.values()))
-
-# Random node positions {node, (x, y)}
-node_positions = {}
-# for node in all_nodes:
-#     x = random.uniform(0, 1)  
-#     y = random.uniform(0, 1) 
-#     node_positions[node] = (x, y)
 
 # Bonus node positions
+node_positions = {}
 
 # determine node with most edges
 node_edges_amount, node_max = 0, 0
@@ -31,17 +25,36 @@ for n, e in adjacency_list.items():
 
 # start determining positions
 node_positions[node_max] = (0,0)
+node_edges = adjacency_list[node_max].copy()
 
-node_edges = adjacency_list[node_max]
+# generate the first circle
+xs, ys = points_on_circle(node_edges_amount, 5, 0, 0)
+for x, y in zip(xs, ys):
+    node_positions[node_edges.pop(0)] = (x, y)
 
-print(360 / node_edges_amount)
-print(math.sin(360 / node_edges_amount) * 5)
+# generate the rest
+"""
 
-angle = 360 / node_edges_amount
-for neighbor in node_edges:
-     node_positions[neighbor] = (math.sin(angle) * 1, math.cos(angle) * 1)
+1. for each adjacency_list item in the first circle, check their neighbors
+2. 
 
-     angle += angle
+"""
+print(adjacency_list.keys())
+# for processed_node in adjacency_list.keys:
+#     if processed_node in adjacency_list.keys():
+
+# for node in adjacency_list[node_max]:
+#     if node in adjacency_list.keys():
+#         new_neighbors = adjacency_list[node].copy()
+
+#         xs, ys = points_on_circle(len(new_neighbors), 5, node_positions[node][0], node_positions[node][1])
+#         for x, y in zip(xs, ys):
+#             new_node = new_neighbors.pop(0)
+#             if new_node not in node_positions:
+
+#                 node_positions[new_node] = (x, y)
+#                 break
+#         break
 
 plt.figure()
 
