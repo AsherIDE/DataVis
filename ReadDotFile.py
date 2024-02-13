@@ -33,4 +33,4 @@ def CreateAdjacencyList(nodes, edges):
     
     return adjacencyList
 
-print(CreateAdjacencyList(G.get_node_list(), G.get_edge_list()))
+# print(CreateAdjacencyList(G.get_node_list(), G.get_edge_list()))
