@@ -1,5 +1,5 @@
 import pydot
-from collections import defaultdict
+# from collections import defaultdict
 
 FILE_NAME = 'Networks/LesMiserables.dot'
 
@@ -17,12 +17,15 @@ def CreateAdjacencyList(edges):
     for edge in edges:
         edge_list.append((edge.get_source(), edge.get_destination()))
 
-    adjacencyList = defaultdict(list)
+    adjacencyList = {}
     
     for start, end in edge_list:
-        adjacencyList[start].append(end)
+
+        if start in adjacencyList.keys():
+            adjacencyList[start].append(end)
+        else:
+            adjacencyList[start] = [end]
     
     return adjacencyList
-    
-    
-CreateAdjacencyList(G.get_edge_list())
+
+# print(CreateAdjacencyList(G.get_edge_list()))

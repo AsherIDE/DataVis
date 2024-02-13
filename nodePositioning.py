@@ -42,6 +42,7 @@ for node in all_nodes:
 
 plt.figure()
 
+# Draw nodes
 for node, position in node_positions.items():
     plt.scatter(position[0], position[1], color='blue', zorder=2)
     plt.text(position[0], position[1]+0.02, node, fontsize=12, ha='center', va='bottom')
