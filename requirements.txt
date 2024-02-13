@@ -1,1 +1,2 @@
-pipenv install pydot
+pip install pydot
+pip install tk

@@ -22,8 +22,6 @@ def CreateAdjacencyList(edges):
     for start, end in edge_list:
         adjacencyList[start].append(end)
     
-    print('adjacencyList', adjacencyList)
-    
     return adjacencyList
     
     
