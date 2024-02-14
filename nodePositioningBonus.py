@@ -15,7 +15,6 @@ G = pydot.graph_from_dot_file(FILE_NAME)[0]
 # Define the adjacency list
 adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
 
-
 # Bonus node positions
 node_positions = {}
 
@@ -33,19 +32,19 @@ node_edges = adjacency_list[node_max].copy()
 # generate the first circle
 xs, ys = points_on_circle(node_edges_amount, 5, 0, 0)
 for x, y in zip(xs, ys):
-    node_positions[node_edges.pop(0)] = (x, y)
+    node_positions[node_edges.pop(0)[0]] = (x, y)
 
 # assign every node into a circle layer, each one furthe away from the centre
-circles = {1: [node_max], 2: adjacency_list[node_max].copy()}
-circles_list = [node_max] + adjacency_list[node_max].copy()
+circles = {1: [node_max], 2: [i[0] for i in adjacency_list[node_max].copy()]}
+circles_list = [node_max] + [i[0] for i in adjacency_list[node_max].copy()]
 nodes_non_categorized = [ele for ele in adjacency_list.keys() if ele not in circles_list]
 while len(nodes_non_categorized) != 0:
     circles_next = []
     circles_number = len(circles.keys())
     for node in circles[circles_number]:
-        for neighbor in adjacency_list[node]:
-            if neighbor not in circles_list:
-                circles_next.append(neighbor)
+        for neighbor in adjacency_list[node[0]]:
+            if neighbor[0] not in circles_list and neighbor[0] not in circles_next:
+                circles_next.append(neighbor[0])
 
     circles_list += circles_next
     new_nodes_non_categorized = [ele for ele in nodes_non_categorized if ele not in circles_next]
@@ -56,7 +55,6 @@ while len(nodes_non_categorized) != 0:
     else:
         circles[circles_number + 1] = circles_next
         nodes_non_categorized = new_nodes_non_categorized
-
 
 # get the coordinates
 radius = 5
@@ -78,8 +76,8 @@ for node, position in node_positions.items():
 # Draw edges
 for node, neighbors in adjacency_list.items():
     for neighbor in neighbors:
-        plt.plot([node_positions[node][0], node_positions[neighbor][0]],
-                 [node_positions[node][1], node_positions[neighbor][1]], color='black', zorder=1)
+        plt.plot([node_positions[node][0], node_positions[neighbor[0]][0]],
+                 [node_positions[node][1], node_positions[neighbor[0]][1]], color='black', zorder=1)
 
 
 plt.title('Graph Visualization')
