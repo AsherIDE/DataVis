@@ -9,7 +9,7 @@ FILE_NAME = 'Networks/LesMiserables.dot'
 G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
 # Define the adjacency list
-adjacency_list = CreateAdjacencyList(G.get_edge_list())
+adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
 
 # all_nodes = sorted(set(adjacency_list.keys()).union(*adjacency_list.values()))
 
