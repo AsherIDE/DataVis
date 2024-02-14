@@ -20,9 +20,9 @@ def points_on_circle(no_of_points, radius, x_center, y_center):
     return x_list, y_list
 
 # test
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
-a = points_on_circle(15, 10, 20, 10)
-plt.figure(figsize=(6, 6))
-plt.scatter(a[0], a[1])
-plt.show()
+# a = points_on_circle(15, 10, 20, 10)
+# plt.figure(figsize=(6, 6))
+# plt.scatter(a[0], a[1])
+# plt.show()
