@@ -2,7 +2,10 @@ import matplotlib.pyplot as plt
 from ReadDotFile import  CreateAdjacencyList
 import random
 import pydot
-import numpy as np
+import time
+
+# timing start
+start_time = time.time()
 
 """ def get_node_degree(adjacency_list, all_nodes):
     out_list = np.zeros((len(all_nodes), 2))
@@ -20,7 +23,7 @@ FILE_NAME = 'Networks/LesMiserables.dot'
 G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
 # Define the adjacency list
-adjacency_list = CreateAdjacencyList(G.get_edge_list())
+adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
 
 all_nodes = sorted(set(adjacency_list.keys()).union(*adjacency_list.values()))
 
@@ -59,5 +62,8 @@ plt.xlabel('X')
 plt.ylabel('Y')
 plt.xticks([])
 plt.yticks([])
+
+# timing end
+print("--- %s seconds ---" % (time.time() - start_time))
 
 plt.show()

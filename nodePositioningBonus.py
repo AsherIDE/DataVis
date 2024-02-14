@@ -1,9 +1,12 @@
 import matplotlib.pyplot as plt
 from ReadDotFile import  CreateAdjacencyList
 import pydot
-import numpy as np
+import time
 
 from points_on_circle import points_on_circle
+
+# timing start
+start_time = time.time()
 
 FILE_NAME = 'Networks/LesMiserables.dot'
 
@@ -84,5 +87,8 @@ plt.xlabel('X')
 plt.ylabel('Y')
 plt.xticks([])
 plt.yticks([])
+
+# timing end
+print("--- %s seconds ---" % (time.time() - start_time))
 
 plt.show()
