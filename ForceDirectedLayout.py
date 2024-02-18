@@ -23,61 +23,62 @@ def plot_graph(ax:plt.Axes, coords_list:dict, adjacency_list:dict):
     # ax.set_yticks([])
     return None
 
-# def return_gravity_displacement(coord, cent=np.array([0.5, 0.5]), gravity_str = 0.02):
-#     vec_to_center = cent - coord
-#     vec_to_center = vec_to_center 
-#     ds = vec_to_center * gravity_str
-#     return ds
+def return_gravity_displacement(coord, cent=np.array([0.5, 0.5]), gravity_str = 0.02):
+    vec_to_center = cent - coord
+    vec_to_center = vec_to_center 
+    ds = vec_to_center * gravity_str
+    return ds
 
-# def return_coulombs_displacement(coord, node_list, adjacency_list, node_id, threshold_value):
-#     disp = np.array([0.0, 0.0])
-#     for (node_id, node) in node_list.items():
-#         ds = coord - node
-#         if np.array_equal(ds, [0,0]):
-#             continue
-#         elif(np.linalg.norm(ds) < threshold_value):
-#             ds_unit = ds / np.linalg.norm(ds)
-#             repel_strength = np.power(np.linalg.norm(ds), -2)
-#             if repel_strength>100:
-#                 repel_strength = 100
-#             disp += ds_unit * repel_strength 
-#         else:
-#             continue
-#     return disp 
+def return_coulombs_displacement(coord, node_list, adjacency_list, node_id, threshold_value):
+    disp = np.array([0.0, 0.0])
+    for (node_id, node) in node_list.items():
+        ds = coord - node
+        if np.array_equal(ds, [0,0]):
+            continue
+        elif(np.linalg.norm(ds) < threshold_value):
+            ds_unit = ds / np.linalg.norm(ds)
+            repel_strength = np.power(np.linalg.norm(ds), -2)
+            if repel_strength>100:
+                repel_strength = 100
+            disp += ds_unit * repel_strength 
+        else:
+            continue
+    return disp 
 
-# def return_spring_displacement(coord, node_id, coord_list, adjacency_list:dict, spring_coeff, ideal_dist):
-#     disp = np.array([0.0,0.0])
-#     if len(adjacency_list[node_id]) == 0:
-#         return disp
-#     for neighbor in adjacency_list[node_id]:
-#         neighbor_coord = coord_list[neighbor[0]]
-#         point_vector = neighbor_coord - coord
-#         point_vector_unit = point_vector / np.linalg.norm(point_vector)
-#         disp += point_vector - point_vector_unit *ideal_dist
-#     return disp * spring_coeff 
+def return_spring_displacement(coord, node_id, coord_list, adjacency_list:dict, spring_coeff, ideal_dist):
+    disp = np.array([0.0,0.0])
+    if len(adjacency_list[node_id]) == 0:
+        return disp
+    for neighbor in adjacency_list[node_id]:
+        neighbor_coord = coord_list[neighbor[0]]
+        point_vector = neighbor_coord - coord
+        point_vector_unit = point_vector / np.linalg.norm(point_vector)
+        disp += point_vector - point_vector_unit * ideal_dist
+    return disp * spring_coeff 
 
-# def update_simulation(
-#     adjacency_list:dict, coords_list:dict, 
-#     grav_coeff = .0001, 
-#     spring_coeff = 0.02, 
-#     coulomb_thresh = 1.25,
-#     coulomb_coeff = 0.00005,
-#     ideal_spring_dist = 0.2
-#     ):
-#     gravity_displacements = np.array([return_gravity_displacement(np.array(coord), gravity_str=grav_coeff) for _, coord in coords_list.items()])
-#     coulomb_displacements = np.array([return_coulombs_displacement(np.array(coord), coords_list, adjacency_list, node_id, coulomb_thresh) for node_id, coord in coords_list.items()])
-#     spring_displacements = np.array([return_spring_displacement(np.array(coord), node_id, coords_list, adjacency_list, spring_coeff, ideal_spring_dist) for node_id, coord in coords_list.items()])
+def update_simulation(
+    coords_list:dict, 
+    adjacency_list:dict,
+    grav_coeff = .0001, 
+    spring_coeff = 0.02, 
+    coulomb_thresh = 1.25,
+    coulomb_coeff = 0.00005,
+    ideal_spring_dist = 0.2
+    ):
+    gravity_displacements = np.array([return_gravity_displacement(np.array(coord), gravity_str=grav_coeff) for _, coord in coords_list.items()])
+    coulomb_displacements = np.array([return_coulombs_displacement(np.array(coord), coords_list, adjacency_list, node_id, coulomb_thresh) for node_id, coord in coords_list.items()])
+    spring_displacements = np.array([return_spring_displacement(np.array(coord), node_id, coords_list, adjacency_list, spring_coeff, ideal_spring_dist) for node_id, coord in coords_list.items()])
     
-#     total_displacements = np.zeros((len(coords_list), 2))
-#     total_displacements += gravity_displacements 
-#     total_displacements += coulomb_displacements*coulomb_coeff
-#     total_displacements += spring_displacements
+    total_displacements = np.zeros((len(coords_list), 2))
+    total_displacements += gravity_displacements 
+    total_displacements += coulomb_displacements*coulomb_coeff
+    total_displacements += spring_displacements
     
-#     for node, disp in zip(coords_list.keys(), total_displacements):
-#         coords_list[node] += disp
-#     return coords_list
+    for node, disp in zip(coords_list.keys(), total_displacements):
+        coords_list[node] += disp
+    return coords_list
 
-def return_gravity_force(coord:np.ndarray, mass, grav_coeff):
+""" def return_gravity_force(coord:np.ndarray, mass, grav_coeff):
     coord_unit = coord / np.linalg.norm(coord)
     return mass * grav_coeff * -1 * coord_unit
 
@@ -138,7 +139,7 @@ def update_physics_sim(
         node_positions[node_key] = new_pos
         velocity_list[node_vel_key] = new_vel
     
-    return node_positions, velocity_list
+    return node_positions, velocity_list """
     
     
     
@@ -168,7 +169,7 @@ velocities = None
 fig, ax = plt.subplots()
 for i in range(number_of_sims):
     ax.clear()
-    node_positions, velocities = update_physics_sim(node_positions, adjacency_list, velocities)
+    node_positions = update_simulation(node_positions, adjacency_list)
     if i%10 == 0:
         plot_graph(ax, node_positions, adjacency_list)
         plt.pause(0.01)
