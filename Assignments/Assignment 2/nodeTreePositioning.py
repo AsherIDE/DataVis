@@ -20,7 +20,46 @@ test_adjacency_list = {'1': ['2'], '2': ['3', '4', '5', '6', '7', '8', '9', '10'
 '63', '76'], '40': ['53'], '58': ['60', '62', '63', '64', '66', '68'], '63': ['60', '61', '62', '64', '66', '67', '77'], '47': ['48'], '60': ['61', '62', '64', '66', '67'], '61': ['62', '64', '66', '67'], '62': ['64', '66', '67'], '64': ['66', '67', '77'], '66': ['67', '77'], '67': ['77'], '74': ['75'], '5': ['2'], '6': ['2'], '7': ['2'], '8': ['2'], '9': ['2'], '10': ['2'], '12': ['11'], '14': ['11'], '15': ['11'], '16': ['11'], '33': ['11'], '34': ['11'], '39': ['11'], '44': ['11'], '45': ['11'], '73': ['11'], '23': ['24'], '31': ['24'], '43': ['25'], '51': ['25'], '41': ['26'], '76': ['26'], '55': ['27'], '46': ['29'], '53': ['52'], '48': ['47'], '75': ['49'], '77': ['49'], '57': ['50'], '54': ['52'], '68': ['58']}
 
 # Create easy to interpret list with tree depth levels
-# Elevation level: [[], []]
+# Elevation level: [[level], [level]]
 # At each level: [{node: [children]}, {node: [children]}]
-def organizeBfsOutput(input, adjacency_list):
-    print("todo")
+def organizeBfsOutput(input):
+    output = []
+
+    level = {}
+    for idx, edge in enumerate(test_bfs_output):
+        top_node, bottom_node = edge[0], edge[1]
+
+        if len(output) is not 0:
+            lower_level_nodes = [elem for iterable in output[-1].values() for elem in iterable]
+        else:
+            lower_level_nodes = []
+        
+        print("lower level nodes (from previous lvl): ", lower_level_nodes)
+        print("bottom node: ", bottom_node)
+        # check if a new node has to be added to the list of nodes for the current level
+        # TODO: if statement not working properly
+        if top_node not in level.keys() and top_node not in lower_level_nodes:
+            print("add node: ", top_node)
+            if top_node in level.keys():
+                level[top_node] = level[top_node] + [bottom_node]
+            else:
+                level[top_node] = [bottom_node]
+        
+        # descend to new level
+        else:
+            print("next level: ", top_node)
+            # reset level dict
+            output.append(level)
+            level = {}
+
+        # also descend on first iter
+        if idx == 0:
+            print("next level: ", top_node)
+            # reset level dict
+            output.append(level)
+            level = {}
+
+    # OUTPUT PRINTING
+    print(output)
+
+organizeBfsOutput(test_bfs_output)
