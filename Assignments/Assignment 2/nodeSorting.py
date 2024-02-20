@@ -19,14 +19,14 @@ def removeAdjacencyListWeights(adjacency_list_weighted):
 
 # Get a list of possible starting nodes
 def getStartNode(adjacency_list):
-    start_nodes = []
+    # determine node with most edges
+    node_edges_amount, node_max = 0, 0
+    for n, e in adjacency_list.items():
+        if len(e) > node_edges_amount:
+            node_edges_amount = len(e)
+            node_max = str(n)
 
-    for node, edges in adjacency_list.items():
-        if len(edges) == 1:
-            start_nodes.append(node)
-
-    return start_nodes
-# print(getStartNode(test_adjacency_list))
+    return node_max
 
 # 
 # Breath first search

@@ -1,4 +1,7 @@
+import pydot
 
+from nodeSorting import bfs, removeAdjacencyListWeights, getStartNode
+from ReadDotFile import CreateAdjacencyList
 
 
 '''
@@ -11,55 +14,90 @@
 
 '''
 
-test_bfs_output = [('1', '2'), ('2', '3'), ('2', '4'), ('2', '5'), ('2', '6'), ('2', '7'), ('2', '8'), ('2', '9'), ('2', '10'), ('2', '11'), ('11', '12'), ('11', '13'), ('11', '14'), ('11', '15'), ('11', '16'), ('11', '24'), ('11', '25'), ('11', '26'), ('11', '27'), ('11', '28'), ('11', '29'), ('11', '30'), ('11', '32'), ('11', '33'), ('11', '34'), ('11', '35'), ('11', '36'), ('11', '37'), ('11', '38'), ('11', '39'), ('11', '44'), ('11', '45'), ('11', '49'), ('11', '50'), ('11', '52'), ('11', '56'), ('11', '59'), ('11', '65'), ('11', '69'), ('11', '70'), ('11', '71'), ('11', '72'), ('11', '73'), ('24', '17'), ('24', '18'), ('24', '19'), ('24', '20'), ('24', '21'), ('24', '22'), ('24', '23'), ('24', '31'), ('25', '42'), ('25', '43'), ('25', '51'), ('26', '40'), ('26', '41'), ('26', '76'), ('27', '55'), ('29', '46'), ('49', '47'), ('49', '58'), ('49', '60'), ('49', '61'), ('49', '62'), ('49', '63'), ('49', 
-'64'), ('49', '66'), ('49', '67'), ('49', '74'), ('49', '75'), ('49', '77'), ('50', '57'), ('52', '53'), ('52', '54'), ('47', '48'), ('58', '68')]
-
-test_adjacency_list = {'1': ['2'], '2': ['3', '4', '5', '6', '7', '8', '9', '10', '11'], '3': ['4', '11'], '4': ['11'], '11': ['12', '13', '14', '15', '16', '24', '25', '26', '27', '28', '29', '30', '32', '33', '34', '35', '36', '37', '38', '39', 
-'44', '45', '49', '50', '52', '56', '59', '65', '69', '70', '71', '72', '73'], '13': ['24'], '24': ['17', '18', '19', '20', '21', '22', '23', '25', '26', '28', '30', '31', '32'], '25': ['26', '27', '28', '42', '43', '51', '69', '70', '71'], '26': ['27', '28', '40', '41', '42', '43', '49', '56', '69', '70', '71', '72', '76'], '27': ['18', '28', '44', '50', '52', '55', '56', '73'], '28': ['29', '30', '32', '34', '44', '49', '59', '69', '70', '71', 
-'72', '73'], '29': ['45', '46'], '30': ['35', '36', '37', '38', '39'], '32': ['31'], '35': ['36', '37', '38', '39'], '36': ['37', '38', '39'], '37': ['38', '39'], '38': ['39'], '49': ['47', '56', '58', '59', '60', '61', '62', '63', '64', '65', '66', '67', '69', '70', '72', '74', '75', '76', '77'], '50': ['51', '52', '55', '56', '57'], '52': ['53', '54', '55', '56'], '56': ['18', '40', '42', '55', '57', '58', '59', '60', '62', '63', '64', '65', '66'], '59': ['58', '60', '61', '62', '63', '64', '65', '66', '67', '71', '77'], '65': ['58', '60', '61', '62', '63', '64', '66', '67', '77'], '69': ['42', '70', '71', '72', '76'], '70': ['42', '71', '72', '76'], '71': ['42', '72', '76'], '72': ['42', '76'], '17': ['18', '19', '20', '21', '22', '23'], '18': ['19', '20', '21', '22', '23'], '19': ['20', '21', '22', '23'], '20': ['21', '22', '23'], '21': ['22', '23'], '22': ['23'], '42': ['43', '58', 
-'63', '76'], '40': ['53'], '58': ['60', '62', '63', '64', '66', '68'], '63': ['60', '61', '62', '64', '66', '67', '77'], '47': ['48'], '60': ['61', '62', '64', '66', '67'], '61': ['62', '64', '66', '67'], '62': ['64', '66', '67'], '64': ['66', '67', '77'], '66': ['67', '77'], '67': ['77'], '74': ['75'], '5': ['2'], '6': ['2'], '7': ['2'], '8': ['2'], '9': ['2'], '10': ['2'], '12': ['11'], '14': ['11'], '15': ['11'], '16': ['11'], '33': ['11'], '34': ['11'], '39': ['11'], '44': ['11'], '45': ['11'], '73': ['11'], '23': ['24'], '31': ['24'], '43': ['25'], '51': ['25'], '41': ['26'], '76': ['26'], '55': ['27'], '46': ['29'], '53': ['52'], '48': ['47'], '75': ['49'], '77': ['49'], '57': ['50'], '54': ['52'], '68': ['58']}
-
 # Create easy to interpret list with tree depth levels
-# Elevation level: [[level], [level]]
-# At each level: [{node: [children]}, {node: [children]}]
+# Input --> Bfs output
+# Output --> List of levels: [{node: [children]}, {node: [children]}]
+# TODO: take care of unconnected nodes
 def organizeBfsOutput(input):
     output = []
 
     level = {}
-    for idx, edge in enumerate(test_bfs_output):
+    lower_level_nodes = []
+    for edge in input:
         top_node, bottom_node = edge[0], edge[1]
-
-        if len(output) is not 0:
-            lower_level_nodes = [elem for iterable in output[-1].values() for elem in iterable]
-        else:
-            lower_level_nodes = []
         
-        print("lower level nodes (from previous lvl): ", lower_level_nodes)
-        print("bottom node: ", bottom_node)
         # check if a new node has to be added to the list of nodes for the current level
-        # TODO: if statement not working properly
-        if top_node not in level.keys() and top_node not in lower_level_nodes:
-            print("add node: ", top_node)
+        if top_node not in lower_level_nodes:
             if top_node in level.keys():
                 level[top_node] = level[top_node] + [bottom_node]
+
             else:
                 level[top_node] = [bottom_node]
+            
+            # list of nodes that shouldnt be on the current level
+            lower_level_nodes.append(bottom_node)
         
         # descend to new level
         else:
-            print("next level: ", top_node)
-            # reset level dict
             output.append(level)
             level = {}
+            lower_level_nodes = []
 
-        # also descend on first iter
-        if idx == 0:
-            print("next level: ", top_node)
-            # reset level dict
-            output.append(level)
-            level = {}
+            # add the current top node to the next level already (in the next iteration it will otherwise be forgotten)
+            level[top_node] = [bottom_node]
 
-    # OUTPUT PRINTING
-    print(output)
+    # add the last level after the last iteration
+    output.append(level)
 
-organizeBfsOutput(test_bfs_output)
+    return output
+
+
+# Determine node offsets for each node
+# Input --> levels output from organizeBfsOutput function
+# Ouput --> [{levels}, {node: {bottom_node: offset}}]
+def getOffsets(levels):
+    output = []
+
+    for level in levels:
+        output_level = {}
+        for top_node, bottom_nodes in level.items():
+            max_offset = (len(bottom_nodes) / 2) - 1 #-1 because 1 max_offset = 0 idx
+            left_offset = 1
+            right_offset = -1
+            
+            output_node_offsets = {}
+            for idx, bottom_node in enumerate(bottom_nodes):
+
+                # left
+                if idx > max_offset:
+                    output_node_offsets[bottom_node] = left_offset
+                    left_offset += 1
+
+                # right
+                else:
+                    output_node_offsets[bottom_node] = right_offset
+                    right_offset -= 1
+
+            output_level[top_node] = output_node_offsets
+
+        output.append(output_level)
+
+    return output
+
+'''
+Below is where we actually start visualizing the tree
+'''
+
+# Define the adjacency list
+FILE_NAME = 'Networks/LesMiserables.dot'
+G = pydot.graph_from_dot_file(FILE_NAME)[0]
+
+# Bfs tree
+adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
+bfs_list = bfs(removeAdjacencyListWeights(adjacency_list), '11')
+top_node = getStartNode(adjacency_list)
+
+levels_list = organizeBfsOutput(bfs_list)
+
+for i in getOffsets(levels_list):
+    print(i)
