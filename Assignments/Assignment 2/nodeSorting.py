@@ -47,7 +47,7 @@ def bfs(g, start_node):
             out.append((x, child))
             to_visit.append(child)
     return out
-# print(bfs(test_adjacency_list, '1'))
+# print(bfs(test_adjacency_list, '11'))
 
 # 
 # TODO: Dept first search

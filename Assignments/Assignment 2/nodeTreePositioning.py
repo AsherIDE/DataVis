@@ -112,16 +112,36 @@ def getCoordinates(offsets):
     # get other node positions
     for idy, level in enumerate(offsets):
         y = idy + 1
-        # x = 1
 
+        occupied_offsets = []
         for bottom_nodes in level.values():
             for node, offset in bottom_nodes.items():
-                output[node] = (offset, -y)
 
-    # TODO: offset compensation
+                # prevent node collision
+                if offset not in occupied_offsets:
+                    output[node] = (offset, -y)
+                    
+                    occupied_offsets.append(offset)
+
+                else:
+                    move = -1
+
+                    # find out if we have to move the node to the left or right
+                    if offset > 0:
+                        move = 1
+
+                    # find new position for node
+                    manual_offset = offset
+                    while True:
+                        manual_offset += move
+
+                        if manual_offset not in occupied_offsets:
+                            output[node] = (manual_offset, -y)
+                            break
+
+                    occupied_offsets.append(manual_offset)
 
     return output
-
 
 '''
 Below is where we actually start visualizing the tree
@@ -141,29 +161,29 @@ offsets_list = getOffsets(levels_list)
 
 coordinates_dict = getCoordinates(offsets_list)
 
-# print("\n\n--------------results---------------")
-# for k, v in coordinates_dict.items():
-#     print(k, v)
-
-# print(f"adj: {removeAdjacencyListWeights(adjacency_list)} \n\n bfs: {bfs_list}   \n\n lvls: {levels_list}")
-
 # Draw nodes
 for node, position in coordinates_dict.items():
-    plt.scatter(position[0], position[1], color='blue', zorder=2)
-    plt.text(position[0], position[1]+0.02, node, fontsize=12, ha='center', va='bottom', zorder=3, color='red')
+    plt.scatter(position[0], position[1], color='#808080', zorder=2, s=350)
+    plt.text(position[0], position[1]-0.05, node, fontsize=12, ha='center', va='bottom', zorder=3, color='black')
 
-print(coordinates_dict.keys())
-# Draw edges
-for node, neighbors in adjacency_list.items():
+# Draw edges (only draw edges that come forth from the bfs output)
+for level in levels_list:
+    for top_node, bottom_nodes in level.items():
+        for node in bottom_nodes:
+            plt.plot([coordinates_dict[node][0], coordinates_dict[top_node][0]],
+                    [coordinates_dict[node][1], coordinates_dict[top_node][1]], color='#808080', zorder=1, alpha=0.5)
+
+# Draw edges (all edges according to adjacency list)
+# for node, neighbors in adjacency_list.items():
     
-    for neighbor in neighbors:
+#     for neighbor in neighbors:
 
-        # TODO: fixt bfs so that nodes wont randomly vanish
-        if neighbor[0] not in coordinates_dict.keys() or node not in coordinates_dict.keys():
-            continue
+#         # prevent node not found from bvs output
+#         if neighbor[0] not in coordinates_dict.keys() or node not in coordinates_dict.keys():
+#             continue
         
-        plt.plot([coordinates_dict[node][0], coordinates_dict[neighbor[0]][0]],
-                 [coordinates_dict[node][1], coordinates_dict[neighbor[0]][1]], color='black', zorder=1)
+#         plt.plot([coordinates_dict[node][0], coordinates_dict[neighbor[0]][0]],
+#                  [coordinates_dict[node][1], coordinates_dict[neighbor[0]][1]], color='black', zorder=1, alpha=0.5)
 
 
 plt.title('Graph Visualization')
