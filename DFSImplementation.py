@@ -120,8 +120,8 @@ def RadialGraph(DFS_order, subtree_edges, mode='pre'):
                 angle_distr = np.linspace(right_bound, left_bound, len(sub_nodes), endpoint=False)
                 
             for j, (angle, child_node) in enumerate(zip(angle_distr, sub_nodes)):
-                coords[child_node[0]] = (np.cos(angle) * (node[1]+1), 
-                                      np.sin(angle) * (node[1]+1),
+                coords[child_node[0]] = (np.cos(angle) * (node[1]*5+10), 
+                                      np.sin(angle) * (node[1]*5+10),
                                       subtree_len)
                 spiral_count += 1
             #  else:
