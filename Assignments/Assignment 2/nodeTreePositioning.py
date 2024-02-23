@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from nodeSorting import bfs, removeAdjacencyListWeights, getStartNode
 from ReadDotFile import CreateAdjacencyList
-from pathlib import Path
+
 
 '''
 - Define minimum distance
@@ -18,7 +18,6 @@ from pathlib import Path
 # Create easy to interpret list with tree depth levels
 # Input --> Bfs output
 # Output --> List of levels: [{node: [children]}, {node: [children]}]
-# TODO: take care of unconnected nodes
 def organizeBfsOutput(input):
     output = []
 
@@ -76,7 +75,16 @@ def getOffsets(levels):
 
             # determine the offset from the top node
             if idx > 0:
-                top_node_offset = elevated_dict[top_node]
+
+                # find top_node in current level if its not in elevated_dict
+                if top_node not in elevated_dict.keys():
+                    # assign a position to nodes connected to the same line manually
+                    for output_node in output_level.values():
+                        if top_node in output_node.keys():
+                            top_node_offset = output_node[top_node]
+                
+                else:
+                    top_node_offset = elevated_dict[top_node]
 
                 left_offset = top_node_offset + 1
                 right_offset = top_node_offset - 1
@@ -101,80 +109,163 @@ def getOffsets(levels):
 
     return output
 
+# Returns a list of nodes that are missing in a network tree
+def getMissingNodes(levels, adjacency_list):
+    nodes_missing = []
+    
+    # get list of all existing nodes in .dot file
+    nodes_adjacency_list = []
+    for adjacency_node, adjacency_neighbors in adjacency_list.items():
+        if adjacency_node not in nodes_adjacency_list:
+            nodes_adjacency_list.append(adjacency_node)
+
+        for adjacency_neighbor in adjacency_neighbors:
+            if adjacency_neighbor not in nodes_adjacency_list:
+                nodes_adjacency_list.append(adjacency_neighbor)
+    
+    # get list of all nodes from all levels
+    nodes_levels = []
+    for level in levels:
+        for top_node, bottom_nodes in level.items():
+            if top_node not in nodes_levels:
+                nodes_levels.append(top_node)
+            
+            for bottom_node in bottom_nodes:
+                if bottom_node not in nodes_levels:
+                    nodes_levels.append(bottom_node)
+    
+    # compare both lists and add missing nodes to missing list
+    for node in nodes_adjacency_list:
+        if node not in nodes_levels:
+            nodes_missing.append(node)
+    
+    return nodes_missing
+
 
 # Get a dict with node coordinates
-def getCoordinates(offsets):
+def getCoordinates(offsets, missing_nodes_list):
     output = {}
 
     # get first node position
     output[list(offsets[0].keys())[0]] = (0, 0)
 
-    # get other node positions
+    # get lower level node positions
     for idy, level in enumerate(offsets):
         y = idy + 1
-        # x = 1
 
+        occupied_offsets = []
         for bottom_nodes in level.values():
             for node, offset in bottom_nodes.items():
-                output[node] = (offset, -y)
 
-    # TODO: offset compensation
+                # prevent node collision
+                if offset not in occupied_offsets:
+                    output[node] = (offset, -y)
+                    
+                    occupied_offsets.append(offset)
+
+                else:
+                    move = -1
+
+                    # find out if we have to move the node to the left or right
+                    if offset > 0:
+                        move = 1
+
+                    # find new position for node
+                    manual_offset = offset
+                    while True:
+                        manual_offset = manual_offset + move
+
+                        if manual_offset not in occupied_offsets:
+                            output[node] = (manual_offset, -y)
+                            break
+
+                    occupied_offsets.append(manual_offset)
+
+    # get missing node positions
+    missing_nodes_count = (len(missing_nodes_list) / 2) - 1
+    y += 1
+    left_offset = -1
+    right_offset = 1
+    for idx, missing_node in enumerate(missing_nodes_list):
+
+        # left
+        if idx <= missing_nodes_count:
+            output[missing_node] = (left_offset, -y)
+            left_offset -= 1
+        # right
+        else:
+            output[missing_node] = (right_offset, -y)
+            right_offset += 1
 
     return output
+
+
+# Input --> file, fontsize, circlesize
+def drawVisualization(FILE_NAME, fontsize, circlesize):
+
+    # define the adjacency list
+    G = pydot.graph_from_dot_file(FILE_NAME)[0]
+
+    # bfs tree
+    adjacency_list = removeAdjacencyListWeights(CreateAdjacencyList(G.get_node_list(), G.get_edge_list()))
+    top_node = getStartNode(adjacency_list)
+    bfs_list = bfs(adjacency_list, top_node)
+
+    # put bfs into levels format
+    levels_list = organizeBfsOutput(bfs_list)
+    offsets_list = getOffsets(levels_list)
+
+    # get coords form levels
+    missing_nodes_list = getMissingNodes(levels_list, adjacency_list)
+    coordinates_dict = getCoordinates(offsets_list, missing_nodes_list)
+
+    for node, position in coordinates_dict.items():
+        plt.scatter(position[0], position[1], color='#808080', zorder=2, s=circlesize)
+        plt.text(position[0], position[1]-0.05, node, fontsize=fontsize, ha='center', va='bottom', zorder=3, color='black')
+
+    # draw edges (only draw edges that come forth from the bfs output)
+    colors = ["#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6", "#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6"]
+    color_index = 0
+    for level in levels_list:
+        for top_node, bottom_nodes in level.items():
+            for node in bottom_nodes:
+                plt.plot([coordinates_dict[node][0], coordinates_dict[top_node][0]],
+                        [coordinates_dict[node][1], coordinates_dict[top_node][1]], color=colors[color_index], zorder=1, alpha=0.8)
+                
+            color_index += 1
+
+    # draw edges (all edges according to adjacency list)
+    # for node, neighbors in adjacency_list.items():
+        
+    #     for neighbor in neighbors:
+
+    #         # prevent node not found from bvs output
+    #         if neighbor[0] not in coordinates_dict.keys() or node not in coordinates_dict.keys():
+    #             continue
+            
+    #         plt.plot([coordinates_dict[node][0], coordinates_dict[neighbor[0]][0]],
+    #                  [coordinates_dict[node][1], coordinates_dict[neighbor[0]][1]], color='black', zorder=1, alpha=0.5)
+
+
+    plt.title('Graph Visualization')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.xticks([])
+    plt.yticks([])
+
+    return plt.show()
 
 
 '''
 Below is where we actually start visualizing the tree
 '''
 
-# Define the adjacency list
-Data_path = Path.cwd()
-Data_path = Data_path.parent.parent / 'Networks' / 'LesMiserables.dot'
-FILE_NAME = str(Data_path)
-G = pydot.graph_from_dot_file(FILE_NAME)[0]
-central_node = 11
-mode= 'pre'
-G = pydot.graph_from_dot_file(FILE_NAME)[0]
+# FILE_NAME = 'Networks/LesMiserables.dot'
+# drawVisualization(FILE_NAME, 12, 350)
 
-# Bfs tree
-adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
-top_node = getStartNode(adjacency_list)
-bfs_list = bfs(removeAdjacencyListWeights(adjacency_list), top_node)
+FILE_NAME = 'Networks/JazzNetwork.dot'
+drawVisualization(FILE_NAME, 6, 50)
 
-levels_list = organizeBfsOutput(bfs_list)
-offsets_list = getOffsets(levels_list)
+# FILE_NAME = 'Networks/LeagueNetwork.dot'
+# drawVisualization(FILE_NAME, 20, 500)
 
-coordinates_dict = getCoordinates(offsets_list)
-
-# print("\n\n--------------results---------------")
-# for k, v in coordinates_dict.items():
-#     print(k, v)
-
-# print(f"adj: {removeAdjacencyListWeights(adjacency_list)} \n\n bfs: {bfs_list}   \n\n lvls: {levels_list}")
-
-# Draw nodes
-for node, position in coordinates_dict.items():
-    plt.scatter(position[0], position[1], color='blue', zorder=2)
-    plt.text(position[0], position[1]+0.02, node, fontsize=12, ha='center', va='bottom', zorder=3, color='red')
-
-# print(coordinates_dict.keys())
-# Draw edges
-for node, neighbors in adjacency_list.items():
-    
-    for neighbor in neighbors:
-
-        # TODO: fixt bfs so that nodes wont randomly vanish
-        if neighbor[0] not in coordinates_dict.keys() or node not in coordinates_dict.keys():
-            continue
-        
-        plt.plot([coordinates_dict[node][0], coordinates_dict[neighbor[0]][0]],
-                 [coordinates_dict[node][1], coordinates_dict[neighbor[0]][1]], color='black', zorder=1)
-
-
-plt.title('Graph Visualization')
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.xticks([])
-plt.yticks([])
-
-plt.show()
