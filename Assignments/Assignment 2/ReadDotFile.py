@@ -1,9 +1,9 @@
 import pydot
 # from collections import defaultdict
 
-FILE_NAME = 'Networks/LesMiserables.dot'
+# FILE_NAME = 'Networks/LesMiserables.dot'
 
-G = pydot.graph_from_dot_file(FILE_NAME)[0]  
+# G = pydot.graph_from_dot_file(FILE_NAME)[0]  
     
 def find_key(adjacency_list, item):
     for key, value_list in adjacency_list.items():
@@ -21,7 +21,7 @@ def CreateAdjacencyList(nodes, edges):
 
         # assign weight of 0 for networks without weights like Jazznetwork
         weight = 0
-        if 'weight' in edge.get_attributes().keys():
+        if 'weight' in edge.get_attributes():
             weight = edge.get_attributes()['weight']
 
         if edge.get_source() in adjacencyList.keys():

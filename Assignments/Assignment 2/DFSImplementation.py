@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from ReadDotFile import CreateAdjacencyList, G
+from ReadDotFile import CreateAdjacencyList
 
 def UnpackAdjacencyList(adjacency_list: dict)->tuple[np.ndarray, np.ndarray]:
     verts = np.array([int(key) for key in adjacency_list])
@@ -142,22 +142,22 @@ def PlotRadialGraph(coords, subtree_edges):
 
     
 
-if __name__ == "__main__":
-    central_node = 11
-    mode= 'pre'
+# if __name__ == "__main__":
+    # central_node = 11
+    # mode= 'pre'
     
-    adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
+    # adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
 
-    verts, edges = UnpackAdjacencyList(adjacency_list)
+    # verts, edges = UnpackAdjacencyList(adjacency_list)
     
-    # Remove edges if their weight is zero
-    edges = np.squeeze([edge for edge in edges if edge[2]>0])
+    # # Remove edges if their weight is zero
+    # edges = np.squeeze([edge for edge in edges if edge[2]>0])
         
-    subtree_edges = CreateSubtree(verts, edges)
+    # subtree_edges = CreateSubtree(verts, edges)
 
-    DFS_order = findDFSOrder(subtree_edges, central_node, mode)
+    # DFS_order = findDFSOrder(subtree_edges, central_node, mode)
 
-    radial_graph = RadialGraph(DFS_order, subtree_edges)
+    # radial_graph = RadialGraph(DFS_order, subtree_edges)
     
-    PlotRadialGraph(radial_graph, subtree_edges)
+    # PlotRadialGraph(radial_graph, subtree_edges)
     
