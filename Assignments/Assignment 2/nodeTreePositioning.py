@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from nodeSorting import bfs, removeAdjacencyListWeights, getStartNode
 from ReadDotFile import CreateAdjacencyList
-
+from pathlib import Path
 
 '''
 - Define minimum distance
@@ -263,7 +263,9 @@ Below is where we actually start visualizing the tree
 # FILE_NAME = 'Networks/LesMiserables.dot'
 # drawVisualization(FILE_NAME, 12, 350)
 
-FILE_NAME = 'Networks/JazzNetwork.dot'
+Data_path = Path.cwd()
+Data_path = Data_path.parent.parent / 'Networks' / 'LesMiserables.dot'
+FILE_NAME = str(Data_path)
 drawVisualization(FILE_NAME, 6, 50)
 
 # FILE_NAME = 'Networks/LeagueNetwork.dot'

@@ -4,6 +4,7 @@ import numpy as np
 
 from nodeSorting import bfs, removeAdjacencyListWeights, getStartNode
 from ReadDotFile import CreateAdjacencyList
+from nodeTreePositioning import getOffsets, getMissingNodes, getCoordinates
 from DFSImplementation import UnpackAdjacencyList, findDFSOrder, CreateSubtree
 
 from pathlib import Path
@@ -54,111 +55,52 @@ def organizeBfsOutput(input):
 
     return output
 
-def organizeDFSoutput(DFSorder):
-    last_depth = 0
-    parent_node = DFS_order[0][0]
-    last_node = DFS_order[0][0]
-    depth_last_added_node_dict = {}
-    output = []
-    for (node, depth) in DFSorder:
-        if node == parent_node:
-            output.append({
-                node: []
-            })
-            last_depth = 0
-            last_node = node
-        elif depth == (last_depth + 1):
-            if len(output) - 1 < depth:
-                output.append({node: []})
-            else:
-                output[depth][node] = []
-            parent_node = last_node
-            output[depth-1][parent_node].append(node)
-            last_depth = depth
-            last_node = node
-        elif depth == last_depth:
-            output[depth][node] = []
-            output[depth-1][parent_node].append(node)
-            last_node = node
-        elif depth == (last_depth - 1):
-            parent_node = depth_last_added_node_dict[depth-1]
-            output[depth][node] =[]
-            output[depth-1][parent_node].append(node)
-            last_depth = depth
-            last_node = node
-        depth_last_added_node_dict[depth] = node
-    return output
+# def organizeDFSoutput(DFSorder):
+#     last_depth = 0
+#     parent_node = DFS_order[0][0]
+#     last_node = DFS_order[0][0]
+#     depth_last_added_node_dict = {}
+#     output = []
+#     for (node, depth) in DFSorder:
+#         if node == parent_node:
+#             output.append({
+#                 node: []
+#             })
+#             last_depth = 0
+#             last_node = node
+#         elif depth == (last_depth + 1):
+#             if len(output) - 1 < depth:
+#                 output.append({node: []})
+#             else:
+#                 output[depth][node] = []
+#             parent_node = last_node
+#             output[depth-1][parent_node].append(node)
+#             last_depth = depth
+#             last_node = node
+#         elif depth == last_depth:
+#             output[depth][node] = []
+#             output[depth-1][parent_node].append(node)
+#             last_node = node
+#         elif depth == (last_depth - 1):
+#             parent_node = depth_last_added_node_dict[depth-1]
+#             output[depth][node] =[]
+#             output[depth-1][parent_node].append(node)
+#             last_depth = depth
+#             last_node = node
+#         depth_last_added_node_dict[depth] = node
+#     return output
 
-
-# Determine node offsets for each node
-# Input --> levels output from organizeBfsOutput function
-# Ouput --> [{levels}, {node: {bottom_node: offset}}]
-def getOffsets(levels):
-    output = []
-
-    for idx, level in enumerate(levels):
-        output_level = {}
-
-        # create a dict to easily find relative starting positions
-        elevated_dict = {}
-        if idx > 0:
-            elevated_level = list(output[idx - 1].values())
-            for elevated_node in elevated_level:
-                elevated_dict.update(elevated_node)
-
-        for top_node, bottom_nodes in level.items():
-            max_offset = (len(bottom_nodes) / 2) - 1 #-1 because 1 max_offset = 0 idx
-            left_offset = 1
-            right_offset = -1
-
-            # determine the offset from the top node
-            if idx > 0:
-                top_node_offset = elevated_dict[top_node]
-
-                left_offset = top_node_offset + 1
-                right_offset = top_node_offset - 1
-            
-            # assign a position to every bottom node
-            output_node_offsets = {}
-            for idx2, bottom_node in enumerate(bottom_nodes):
-
-                # assign left offset
-                if idx2 > max_offset:
-                    output_node_offsets[bottom_node] = left_offset
-                    left_offset += 1
-
-                # assign right offset
-                else:
-                    output_node_offsets[bottom_node] = right_offset
-                    right_offset -= 1
-
-            output_level[top_node] = output_node_offsets
-
-        output.append(output_level)
-
-    return output
-
-
-# Get a dict with node coordinates
-def getCoordinates(offsets):
+def get_dfs_coords(DFSOrder):
     output = {}
-
-    # get first node position
-    output[list(offsets[0].keys())[0]] = (0, 0)
-
-    # get other node positions
-    for idy, level in enumerate(offsets):
-        y = idy + 1
-        # x = 1
-
-        for bottom_nodes in level.values():
-            for node, offset in bottom_nodes.items():
-                output[node] = (offset, -y)
-
-    # TODO: offset compensation
-
+    depth_dict = {}
+    for node, depth in DFS_order:
+        if depth not in depth_dict:
+            depth_dict[depth] = [node]
+            output[node] = [0, -depth]
+        else:
+            depth_dict[depth].append(node)
+            output[node] = [len(depth_dict[depth])-1, -depth]
     return output
-
 
 '''
 Below is where we actually start visualizing the tree
@@ -177,49 +119,40 @@ mode= 'pre'
 adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
 top_node = getStartNode(adjacency_list)
 verts, edges = UnpackAdjacencyList(adjacency_list)
+adjacency_sans_weights = removeAdjacencyListWeights(adjacency_list)
 edges = np.squeeze([edge for edge in edges if edge[2]>0])
 subtree_edges = CreateSubtree(verts, edges)
 DFS_order = findDFSOrder(subtree_edges, central_node, mode)
 
+node_coords = get_dfs_coords(DFS_order)
 
-levels_list = organizeDFSoutput(DFS_order)
+colors = ["#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6", "#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6"]
 
-offsets_list = getOffsets(levels_list)
+fig, ax = plt.subplots(figsize=(7,7))
 
-coordinates_dict = getCoordinates(offsets_list)
-
-# print("\n\n--------------results---------------")
-# for k, v in coordinates_dict.items():
-#     print(k, v)
-
-# print(f"adj: {removeAdjacencyListWeights(adjacency_list)} \n\n bfs: {bfs_list}   \n\n lvls: {levels_list}")
-
-# Draw nodes
-for node, position in coordinates_dict.items():
-    plt.scatter(position[0], position[1], color='blue', zorder=2)
-    plt.text(position[0], position[1]+0.02, node, fontsize=12, ha='center', va='bottom', zorder=3, color='red')
-
-print(coordinates_dict.keys())
-# Draw edges
-for node, neighbors in adjacency_list.items():
-    print(node, neighbors)
+for node, coord in node_coords.items():
+    ax.scatter(coord[0], coord[1], c='blue')
+    ax.text(coord[0], coord[1], node)
     
-    for neighbor_w in neighbors:
-        neighbor, weight = neighbor_w
-        neighbor = int(neighbor)
-        print(neighbor, weight)
-        # TODO: fixt bfs so that nodes wont randomly vanish
-        # if neighbor not in coordinates_dict.keys() or node not in coordinates_dict.keys():
-        #     continue
-        
-        plt.plot([coordinates_dict[node][0], coordinates_dict[neighbor][0]],
-                 [coordinates_dict[node][1], coordinates_dict[neighbor][1]], color='black', zorder=1)
+last_depth = 0
+color_index = 0
 
+# print(DFS_order)
 
-plt.title('Graph Visualization')
-plt.xlabel('X')
-plt.ylabel('Y')
-plt.xticks([])
-plt.yticks([])
+for entry in subtree_edges:
+    node = entry
+    neighbor, weight = subtree_edges[entry]
+    
+    depth = min(node_coords[node][1], node_coords[neighbor][1])
+    # print(node, neighbor, depth)
+    
+    ax.plot([node_coords[node][0], node_coords[neighbor][0]],
+            [node_coords[node][1], node_coords[neighbor][1]], color=colors[color_index], zorder=1)
+   
+ax.set_title('Graph Visualization')
+ax.set_xlabel('X')
+ax.set_ylabel('Y')
+ax.set_xticks([])
+ax.set_yticks([])
 
 plt.show()

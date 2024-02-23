@@ -21,7 +21,7 @@ def CreateAdjacencyList(nodes, edges):
 
         # assign weight of 0 for networks without weights like Jazznetwork
         weight = 0
-        if 'weight' in edge.get_attributes().keys():
+        if 'weight' in edge.get_attributes():
             weight = edge.get_attributes()['weight']
 
         if edge.get_source() in adjacencyList.keys():
