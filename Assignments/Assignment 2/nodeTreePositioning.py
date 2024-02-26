@@ -145,6 +145,7 @@ def getMissingNodes(levels, adjacency_list):
 # Get a dict with node coordinates
 def getCoordinates(offsets, missing_nodes_list):
     output = {}
+    loose_nodes = []
 
     # get first node position
     output[list(offsets[0].keys())[0]] = (0, 0)
@@ -183,21 +184,26 @@ def getCoordinates(offsets, missing_nodes_list):
 
     # get missing node positions
     missing_nodes_count = (len(missing_nodes_list) / 2) - 1
-    y += 1
+    yl = y + 1
+    yr = y + 1
+
     left_offset = -1
     right_offset = 1
     for idx, missing_node in enumerate(missing_nodes_list):
+        loose_nodes.append(missing_node)
 
         # left
         if idx <= missing_nodes_count:
-            output[missing_node] = (left_offset, -y)
+            output[missing_node] = (left_offset, -yl)
             left_offset -= 1
+            yl += 0.2
         # right
         else:
-            output[missing_node] = (right_offset, -y)
+            output[missing_node] = (right_offset, -yr)
             right_offset += 1
+            yr += 0.2
 
-    return output
+    return output, loose_nodes
 
 
 # Input --> file, fontsize, circlesize
@@ -217,7 +223,7 @@ def drawVisualization(FILE_NAME, fontsize, circlesize):
 
     # get coords form levels
     missing_nodes_list = getMissingNodes(levels_list, adjacency_list)
-    coordinates_dict = getCoordinates(offsets_list, missing_nodes_list)
+    coordinates_dict, loose_nodes = getCoordinates(offsets_list, missing_nodes_list)
 
     for node, position in coordinates_dict.items():
         plt.scatter(position[0], position[1], color='#808080', zorder=2, s=circlesize)
@@ -245,6 +251,14 @@ def drawVisualization(FILE_NAME, fontsize, circlesize):
             
     #         plt.plot([coordinates_dict[node][0], coordinates_dict[neighbor[0]][0]],
     #                  [coordinates_dict[node][1], coordinates_dict[neighbor[0]][1]], color='black', zorder=1, alpha=0.5)
+            
+    # draw lines between loose nodes
+    connected = {}
+    for node1 in loose_nodes:
+        for node2 in loose_nodes:
+            if node1 in adjacency_list.keys() and node2 in adjacency_list[node1]:
+                plt.plot([coordinates_dict[node1][0], coordinates_dict[node2][0]],
+                        [coordinates_dict[node1][1], coordinates_dict[node2][1]], color=colors[color_index], zorder=1, alpha=0.8)
 
 
     plt.title('Graph Visualization')
@@ -260,13 +274,13 @@ def drawVisualization(FILE_NAME, fontsize, circlesize):
 Below is where we actually start visualizing the tree
 '''
 
-# FILE_NAME = 'Networks/LesMiserables.dot'
-# drawVisualization(FILE_NAME, 12, 350)
+FILE_NAME = 'Networks/LesMiserables.dot'
+drawVisualization(FILE_NAME, 12, 350)
 
-Data_path = Path.cwd()
-Data_path = Data_path.parent.parent / 'Networks' / 'LesMiserables.dot'
-FILE_NAME = str(Data_path)
-drawVisualization(FILE_NAME, 6, 50)
+# Data_path = Path.cwd()
+# Data_path = Data_path.parent.parent / 'Networks' / 'LesMiserables.dot'
+# FILE_NAME = str(Data_path)
+# drawVisualization(FILE_NAME, 6, 50)
 
 # FILE_NAME = 'Networks/LeagueNetwork.dot'
 # drawVisualization(FILE_NAME, 20, 500)
