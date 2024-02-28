@@ -15,20 +15,19 @@ def CreateDirectedAdjacencyList(edges):
             output[source] += [target]
 
     return output
-        
+
+# list of lists --> list
+def flatten(matrix):
+    flat_list = []
+    for row in matrix:
+        flat_list.extend(row)
+    return list(set(flat_list))
 
 # Returns directed acyclic graph (Heuristic with guarantees by Eades et al. (1993))
 # NOTE: add changed_nodes_dict to the return to see which nodes were reversed
 def CreateDirectedAcyclicAdjacencyList(adjacency_list):
     adjacency_list_copy = copy.deepcopy(adjacency_list)
     acyclic_adjacency_list = {}
-
-    # list of lists --> list
-    def flatten(matrix):
-        flat_list = []
-        for row in matrix:
-            flat_list.extend(row)
-        return list(set(flat_list))
     
     # remove a sink from all adjacency_list values
     def remove_sink(sink):
@@ -131,7 +130,7 @@ def CreateDirectedAcyclicAdjacencyList(adjacency_list):
             break
 
         changed_nodes_dict[change_node] = vertices_to_change_node
-        print(f"Acycled connection: {change_node} --> {vertices_to_change_node}")
+        # print(f"Acycled connection: {change_node} --> {vertices_to_change_node}")
         adjacency_list_copy.pop(change_node)
 
     # update the return adjacency_list
