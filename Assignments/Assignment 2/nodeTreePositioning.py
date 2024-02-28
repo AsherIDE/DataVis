@@ -230,7 +230,8 @@ def drawVisualization(FILE_NAME, fontsize, circlesize):
         plt.text(position[0], position[1]-0.05, node, fontsize=fontsize, ha='center', va='bottom', zorder=3, color='black')
 
     # draw edges (only draw edges that come forth from the bfs output)
-    colors = ["#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6", "#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6"]
+    colors = ["#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B", "#325A9B"]
+    # colors = ["#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6", "#325A9B", "#EECA3B", "#FECB52", "#00CC96", "#636EFA", "#19D3F3", "#0D2A63", "#AB63FA", "#FF6692", "#BAB0AC", "#EF553B", "#6A76FC", "#E45756", "#479B55", "#72B7B2", "#1CBE4F", "#FF97FF", "#FF8000", "#B82E2E", "#FFA15A", "#54A24B", "#1C8356", "#FBE426", "#B6E880", "#AF0033", "#0099C6"]
     color_index = 0
     for level in levels_list:
         for top_node, bottom_nodes in level.items():
@@ -276,6 +277,9 @@ Below is where we actually start visualizing the tree
 
 FILE_NAME = 'Networks/LesMiserables.dot'
 drawVisualization(FILE_NAME, 12, 350)
+
+# FILE_NAME = 'Networks/JazzNetwork.dot'
+# drawVisualization(FILE_NAME, 6, 50)
 
 # Data_path = Path.cwd()
 # Data_path = Data_path.parent.parent / 'Networks' / 'LesMiserables.dot'
