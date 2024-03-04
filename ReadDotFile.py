@@ -18,11 +18,16 @@ def CreateAdjacencyList(nodes, edges):
     adjacencyList = {}
     
     for edge in edges:
-        if edge.get_source() in adjacencyList.keys():
-            adjacencyList[edge.get_source()].append((edge.get_destination(), edge.get_attributes()['weight']))
+        if 'weight' in edge.get_attributes():
+            if edge.get_source() in adjacencyList.keys():
+                adjacencyList[edge.get_source()].append((edge.get_destination(), edge.get_attributes()['weight']))
+            else:
+                adjacencyList[edge.get_source()] = [(edge.get_destination(), edge.get_attributes()['weight'])]
         else:
-            adjacencyList[edge.get_source()] = [(edge.get_destination(), edge.get_attributes()['weight'])]
-    
+            if edge.get_source() in adjacencyList.keys():
+                adjacencyList[edge.get_source()].append((edge.get_destination()))
+            else:
+                adjacencyList[edge.get_source()] = [(edge.get_destination())]
     for node in nodes:
         if node.get_name() not in adjacencyList.keys():
             #should ask if the same weight should be there otherway around
