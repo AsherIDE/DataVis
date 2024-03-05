@@ -35,63 +35,6 @@ class Node:
         self.quadtree_pos = quad_pos
 
 
-# class QuadTreeElement:
-#     def __init__(self, quad_pos:np.ndarray, quad_size: float, name:str) -> None:
-#         self.MAX_CAPACITY = 4
-#         self.bb_pos = (quad_pos, quad_size)
-#         self.name = name
-        
-#         self.quad_dict = {
-#             'NW' : ("E", 0),
-#             'NE' : ("E", 0),
-#             'SW' : ("E", 0),
-#             'SE' : ("E", 0),
-#         }
-
-#         # Children will be either leaves ('L') or more quadtree elements ('T'), followed by their index in the array. Else empty ('E')
-
-#         return self
-    
-#     def insert_node(self, node_pos:np.ndarray, node_name:str) -> bool:
-#         quart_key = ''
-#         x_diff = self.bb_pos[0][0] - node_pos[0]
-#         y_diff = self.bb_pos[0][1] - node_pos[1]
-#         if abs(x_diff) < self.bb_pos[1] and abs(y_diff) < self.bb_pos[1]:
-#             if np.sign(x_diff) == np.sign(y_diff):
-#                 if np.sign(x_diff) == 1:
-#                     quart_key = 'NE'
-#                 else:
-#                     quart_key = 'SW'
-#             elif np.sign(x_diff) != np.sign(y_diff):
-#                 if np.sign(x_diff) == 1:
-#                     quart_key = 'SE'
-#                 else:
-#                     quart_key = 'NW'
-#             else:
-#                 return False
-#             if self.quad_dict[quart_key][0] == 'E':
-#                 self.quad_dict[quart_key] = ("L", node_name)
-#             elif self.quad_dict[quart_key][0] == 'T':
-                
-                
-#         else:
-#             return False
-                    
-
-# def populate_quadtree(node_positions: dict[str, Node]) -> dict[str, QuadTreeElement]:
-#     x_poss = np.array([node.pos[0] for name, node in nodes_dict.items()])
-#     y_poss = np.array([node.pos[1] for name, node in nodes_dict.items()])
-
-#     area_width, area_height = np.max(x_poss) - np.min(x_poss), np.max(y_poss) - np.min(y_poss)
-#     tree_size = max(area_height, area_width) 
-#     tree_cent = np.array([np.mean(x_poss), np.mean(y_poss)])
-
-#     out_dict = {}
-#     out_dict['0'] = QuadTreeElement(tree_cent, tree_size / 2)
-    
-    
-
-
 def plot_graph(nodes_dict: dict[str, Node], edge_list, ax, force_plot):
     x_poss = np.array([node.pos.x for name, node in nodes_dict.items()])
     y_poss = np.array([node.pos.y for name, node in nodes_dict.items()])
@@ -104,20 +47,23 @@ def plot_graph(nodes_dict: dict[str, Node], edge_list, ax, force_plot):
     ax[1].set_ylabel("Sum speed of all particles")
     ax[1].set_xscale("log")
     ax[1].set_yscale("log")
+    
+    ax[0].set_xticks([])
+    ax[0].set_yticks([])
 
-    ax[0].scatter(x_poss, y_poss, c="red", s=130, zorder=3, alpha=0.6)
+    ax[0].scatter(x_poss, y_poss, c="red", s=100, zorder=3, alpha=0.7)
 
-    for xpos, ypos, name in zip(x_poss, y_poss, names):
-        ax[0].text(
-            xpos, ypos - 0.04, name, c="black", fontsize=8, ha="center", va="center"
-        )
+    # for xpos, ypos, name in zip(x_poss, y_poss, names):
+        # ax[0].text(
+        #     xpos, ypos - 0.04, name, c="black", fontsize=8, ha="center", va="center"
+        # )
 
     for edge in edge_list:
         source_pos = nodes_dict[edge.get_source()].pos
         dest_pos = nodes_dict[edge.get_destination()].pos
-        ax[0].plot([source_pos.x, dest_pos.x], [source_pos.y, dest_pos.y], c="black", zorder=2, alpha=0.4)
+        ax[0].plot([source_pos.x, dest_pos.x], [source_pos.y, dest_pos.y], c="black", zorder=2, alpha=0.1)
 
-    ax[1].plot(range(len(force_plot)), np.array(force_plot) / len(nodes_dict), c="tab:blue")
+    ax[1].plot(range(len(force_plot)), np.array(force_plot), c="tab:blue")
 
 
 def spring_embed_repulse(node1: Point, node2: Point, c_rep: float):
@@ -258,10 +204,10 @@ def init_sim(G: pydot.Dot, init_mode="stoch") -> tuple[dict[str:Node], list]:
 
 if __name__ == "__main__":
 
-    # FILE_NAME = "Networks/JazzNetwork.dot"
+    FILE_NAME = "Networks/JazzNetwork.dot"
     # FILE_NAME = 'Networks/LeagueNetwork.dot'
     # FILE_NAME = "Networks/SmallDirectedNetwork.dot"
-    FILE_NAME = "Networks/LesMiserables.dot"
+    # FILE_NAME = "Networks/LesMiserables.dot"
 
     DELTA_TIME = False
     MODE = "FR"  # Out of SP (Spring-Embedder), FR (Fruchterman and Reingold)
@@ -273,7 +219,7 @@ if __name__ == "__main__":
     print("Reading file...")
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-    nodes_dict, edges_list = init_sim(G, init_mode="circle")
+    nodes_dict, edges_list = init_sim(G, init_mode="stoch")
 
     number_of_sims = 5000
 
@@ -288,15 +234,18 @@ if __name__ == "__main__":
             fig.savefig("Assignments/Assignment 3/StartPosition.png")
         
         node_positions, tot_force = update_sim(
-            nodes_dict, c_rep=1, c_spring=2, length=3, c_grav=0.0001, delta=delta
+            nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta
         )
-        tot_force_plot.append(tot_force)
+        tot_force_plot.append(tot_force / len(nodes_dict))
         ax[0].cla()
         ax[1].cla()
         plot_graph(nodes_dict, edges_list, ax, tot_force_plot)
         fig.tight_layout()
         plt.pause(0.01)
-        if i == 500:
-            fig.savefig("Assignments/Assignment 3/EndPosition.png")
+        if i % 50 == 0:
+            fig.savefig(f"Assignments/Assignment 3/Iteration{i}.png")
+        if tot_force / len(nodes_dict) < .42:
+            fig.savefig(f"Assignments/Assignment 3/FinalPosition.png")
+            break
 
     plt.show()
