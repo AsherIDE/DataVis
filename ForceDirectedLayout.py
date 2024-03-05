@@ -204,10 +204,10 @@ def init_sim(G: pydot.Dot, init_mode="stoch") -> tuple[dict[str:Node], list]:
 
 if __name__ == "__main__":
 
-    FILE_NAME = "Networks/JazzNetwork.dot"
+    # FILE_NAME = "Networks/JazzNetwork.dot"
     # FILE_NAME = 'Networks/LeagueNetwork.dot'
     # FILE_NAME = "Networks/SmallDirectedNetwork.dot"
-    # FILE_NAME = "Networks/LesMiserables.dot"
+    FILE_NAME = "Networks/LesMiserables.dot"
 
     DELTA_TIME = False
     MODE = "FR"  # Out of SP (Spring-Embedder), FR (Fruchterman and Reingold)
