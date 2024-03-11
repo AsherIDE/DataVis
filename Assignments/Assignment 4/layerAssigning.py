@@ -76,13 +76,15 @@ adj_test_list = CreateDirectedAdjacencyList(G.get_edge_list())
 
 # print(adj_test_list)
 total_nodes = [node.get_name() for node in G.get_node_list()]
-acyclic_adj_test_list = CreateDirectedAcyclicAdjacencyList(adj_test_list)
+acyclic_adj_test_list, changed_nodes = CreateDirectedAcyclicAdjacencyList(adj_test_list)
 
 # print(f"-------------------------------\n in: {acyclic_adj_test_list} \n-------------------------------\n")
 
-print("-------------------------------\n out: \n-------------------------------\n")
-for l, v in CreateLayerAssignment(acyclic_adj_test_list, total_nodes).items():
-        print(f"level: {l} \n items: {v}")
+# print("-------------------------------\n out: \n-------------------------------\n")
+# for l, v in CreateLayerAssignment(acyclic_adj_test_list, total_nodes).items():
+#         print(f"level: {l} \n items: {v}")
 
-print("\n-------------------------------\n")
+# print("\n-------------------------------\n")
+
+result = CreateLayerAssignment(acyclic_adj_test_list, total_nodes)
 

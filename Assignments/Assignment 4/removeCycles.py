@@ -20,7 +20,7 @@ def CreateDirectedAdjacencyList(edges):
 def flatten(matrix):
     flat_list = []
     for row in matrix:
-        flat_list.extend(row)
+        flat_list += row
     return list(set(flat_list))
 
 # Returns directed acyclic graph (Heuristic with guarantees by Eades et al. (1993))
@@ -147,16 +147,17 @@ def CreateDirectedAcyclicAdjacencyList(adjacency_list):
             if len(adjacency_list[changed_value]) == 0:
                 adjacency_list.pop(changed_value)
 
-    return adjacency_list
+    return adjacency_list, changed_nodes_dict
 
 
 # testing
-# FILE_NAME = 'Networks/SmallDirectedNetwork.dot'
-# G = pydot.graph_from_dot_file(FILE_NAME)[0]
+FILE_NAME = 'Networks/SmallDirectedNetwork.dot'
+G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-# FILE_NAME = 'Networks/LeagueNetwork.dot'
-# G = pydot.graph_from_dot_file(FILE_NAME)[0]
+FILE_NAME = 'Networks/LeagueNetwork.dot'
+G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-# adj_test_list = CreateDirectedAdjacencyList(G.get_edge_list())
+adj_test_list = CreateDirectedAdjacencyList(G.get_edge_list())
 
 # print(f"-------------------------------\n removed loops: {CreateDirectedAcyclicAdjacencyList(adj_test_list)} \n-------------------------------\n")
+
