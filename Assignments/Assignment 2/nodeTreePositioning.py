@@ -106,7 +106,8 @@ def drawTree(FILE_NAME, fontsize, circlesize, xy):
 
     # bfs tree
     adjacency_list = removeAdjacencyListWeights(CreateAdjacencyList(G.get_node_list(), G.get_edge_list()))
-    top_node = getStartNode(adjacency_list)
+    total_nodes = [node.get_name() for node in G.get_node_list()]
+    top_node = getStartNode(adjacency_list, total_nodes)[0]
     bfs_list = bfs(adjacency_list, top_node)
 
     # put bfs into tree format
@@ -145,19 +146,34 @@ def drawTree(FILE_NAME, fontsize, circlesize, xy):
                     connections[missing_node1].append(missing_node2)
 
     
-    # draw the nodes and edges
+    # draw the nodes and edges (based on tree connections)
+    drawn_edges = []
     for node, position in coords.items():
-        plt.scatter(position[0], position[1], color='#808080', zorder=2, s=circlesize)
-        plt.text(position[0], position[1]-0.02, node, fontsize=fontsize, ha='center', va='bottom', zorder=3, color='black')
+        plt.scatter(position[0], position[1], color='#808080', zorder=3, s=circlesize)
+        plt.text(position[0], position[1]-0.02, node, fontsize=fontsize, ha='center', va='bottom', zorder=4, color='black')
 
         if node in connections:
             for child in connections[node]:
                 plt.plot([position[0], coords[child][0]],
-                        [position[1], coords[child][1]], color="#325A9B", zorder=1, alpha=0.8)
+                        [position[1], coords[child][1]], color="#325A9B", zorder=2, alpha=0.8)
+                
+                drawn_edges.append((node, child))
+                
+    # draw edges (based on all connections from adjacency list)
+    # for node, neighbors in adjacency_list.items():
+        
+    #     for neighbor in neighbors:
 
-    plt.title('Graph Visualization')
-    plt.xlabel('X')
-    plt.ylabel('Y')
+    #         # prevent already drawn vertices from being drawn again
+    #         if (node, neighbor) in drawn_edges or (neighbor, node) in drawn_edges:
+    #             continue
+            
+    #         plt.plot([coords[node][0], coords[neighbor[0]][0]],
+    #                  [coords[node][1], coords[neighbor[0]][1]], color='black', zorder=1, alpha=0.4)
+
+    plt.title('Tree Visualization')
+    # plt.xlabel('X')
+    # plt.ylabel('Y')
     plt.xticks([])
     plt.yticks([])
 
