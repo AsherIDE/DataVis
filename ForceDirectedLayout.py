@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import pydot
 import numpy as np
 from quadtree_3rd_party import Point, Rect, QuadTree
+import json
 
 
 class Node:
@@ -201,6 +202,13 @@ def init_sim(G: pydot.Dot, init_mode="stoch") -> tuple[dict[str:Node], list]:
 
     return nodes_dict, edge_list
 
+def export_node_positions(nodes_dict: dict[str, Node]):
+    export_dict = {
+        node_name: [node.pos.x, node.pos.y] for node_name, node in nodes_dict.items()
+    }
+    with open('node_positions.json', 'w') as fp:
+        json.dump(export_dict, fp, indent=3)
+
 
 if __name__ == "__main__":
 
@@ -240,6 +248,7 @@ if __name__ == "__main__":
         ax[0].cla()
         ax[1].cla()
         plot_graph(nodes_dict, edges_list, ax, tot_force_plot)
+        export_node_positions(nodes_dict)
         fig.tight_layout()
         plt.pause(0.01)
         if i % 50 == 0:
