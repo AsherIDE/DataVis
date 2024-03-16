@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pydot
 import numpy as np
 from quadtree_3rd_party import Point, Rect, QuadTree
-
+import json
 
 class Node:
 
@@ -59,6 +59,9 @@ def plot_graph(nodes_dict: dict[str, Node], edge_list, ax, force_plot):
         # )
 
     for edge in edge_list:
+        if edge.get_source() not in nodes_dict or edge.get_destination() not in nodes_dict:
+            continue
+
         source_pos = nodes_dict[edge.get_source()].pos
         dest_pos = nodes_dict[edge.get_destination()].pos
         ax[0].plot([source_pos.x, dest_pos.x], [source_pos.y, dest_pos.y], c="black", zorder=2, alpha=0.1)
@@ -107,7 +110,7 @@ def update_sim(
     c_rep: float = 1,
     c_FP: float = 1,
     c_grav: float = 1,
-    delta: float = 1,
+    delta: float = 1
 ):
     total_total_force = 0
     poss = np.array([[node.pos.x, node.pos.y] for name, node in node_dict.items()])
@@ -153,13 +156,19 @@ def update_sim(
     return node_dict, total_total_force
 
 
-def init_sim(G: pydot.Dot, init_mode="stoch") -> tuple[dict[str:Node], list]:
+def init_sim(G: pydot.Dot, cluster, init_mode="stoch") -> tuple[dict[str:Node], list]:
 
     print("Initializing nodes...")
 
-    node_list = [point.get_name() for point in G.get_node_list()]
-    edge_list = G.get_edge_list()
+    # # TODO: check whether we are working with a cluster or not (FOR NOW THIS CODE ASSUMES WE ALWAYS WORK WITH A CLUSTER)
+    # node_list = []
+    # edge_list = G.get_edge_list()
+    # for cluster in G.get_subgraphs():
+    #     node_list += [point.get_name() for point in cluster.get_node_list()]
 
+    node_list = [point.get_name() for point in cluster.get_node_list()]
+    edge_list = G.get_edge_list()
+    
     # Initialize node positions
     start_poss = {}
     angle_list = np.linspace(0, 2 * np.pi - 0.05, len(node_list), endpoint=False)
@@ -178,7 +187,11 @@ def init_sim(G: pydot.Dot, init_mode="stoch") -> tuple[dict[str:Node], list]:
         source = edge.get_source()
         dest = edge.get_destination()
         attr = edge.get_attributes()
-        
+
+        # prevent non existing nodes from being processed
+        if source not in node_list or dest not in node_list:
+            continue
+
         nodes_dict[source].add_adjacent(dest, attr)
         nodes_dict[dest].add_adjacent(source, attr)
 
@@ -201,53 +214,70 @@ def init_sim(G: pydot.Dot, init_mode="stoch") -> tuple[dict[str:Node], list]:
 
     return nodes_dict, edge_list
 
-
-if __name__ == "__main__":
-
-    # FILE_NAME = "Networks/JazzNetwork.dot"
-    # FILE_NAME = 'Networks/LeagueNetwork.dot'
-    # FILE_NAME = "Networks/SmallDirectedNetwork.dot"
-    # FILE_NAME = "Networks/LesMiserables.dot"
-    FILE_NAME = "Networks/ArgumentationNetwork.dot"
+def export_node_positions(nodes_dict: dict[str, Node], path):
+    export_dict = {
+        node_name: [node.pos.x, node.pos.y] for node_name, node in nodes_dict.items()
+    }
+    with open(path, 'w') as fp:
+        json.dump(export_dict, fp, indent=3)
 
 
-    DELTA_TIME = False
-    MODE = "FR"  # Out of SP (Spring-Embedder), FR (Fruchterman and Reingold)
-    INERTIA = True
-    GRAVITY = True
+def renderNodePositions(FILE_NAME, number_of_sims):
+    if __name__ == "__main__":
 
-    DT = 0.01
+        print("Reading file...")
 
-    print("Reading file...")
-    G = pydot.graph_from_dot_file(FILE_NAME)[0]
+        G = pydot.graph_from_dot_file(FILE_NAME)[0]
+        for cluster in G.get_subgraphs():
+            nodes_dict, edges_list = init_sim(G, cluster, init_mode="stoch")
 
-    nodes_dict, edges_list = init_sim(G, init_mode="stoch")
+            file_name = cluster.obj_dict["name"].replace('"', '').replace(' ', '_')
+            folder = FILE_NAME.split(".")[0].split("/")[1]
+            path = f'Assignments/Assignment 5/nodePositions/{folder}/{file_name}.json'
 
-    number_of_sims = 5000
+            fig, ax = plt.subplots(1, 2, figsize=(10, 6))
+            tot_force_plot = []
 
-    fig, ax = plt.subplots(1, 2, figsize=(10, 6))
-    tot_force_plot = []
+            for i in range(number_of_sims):
+                delta_t = 1 / (i * i * i + 100) + 0.001
+                delta = [DT, delta_t][DELTA_TIME]
+                
+                # if i == 0:
+                #     fig.savefig("Assignments/Assignment 3/StartPosition.png")
+                
+                node_positions, tot_force = update_sim(
+                    nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta
+                )
+                tot_force_plot.append(tot_force / len(nodes_dict))
+                ax[0].cla()
+                ax[1].cla()
+                plot_graph(nodes_dict, edges_list, ax, tot_force_plot)
+                
+                fig.tight_layout()
+                plt.pause(0.01)
+                if i % 50 == 0:
+                    # fig.savefig(f"Assignments/Assignment 3/Iteration{i}.png")
+                    export_node_positions(nodes_dict, path)
+                if tot_force / len(nodes_dict) < .42:
+                    # fig.savefig(f"Assignments/Assignment 3/FinalPosition.png")
+                    export_node_positions(nodes_dict, path)
+                    break
 
-    for i in range(number_of_sims):
-        delta_t = 1 / (i * i * i + 100) + 0.001
-        delta = [DT, delta_t][DELTA_TIME]
-        
-        if i == 0:
-            fig.savefig("Assignments/Assignment 3/StartPosition.png")
-        
-        node_positions, tot_force = update_sim(
-            nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta
-        )
-        tot_force_plot.append(tot_force / len(nodes_dict))
-        ax[0].cla()
-        ax[1].cla()
-        plot_graph(nodes_dict, edges_list, ax, tot_force_plot)
-        fig.tight_layout()
-        plt.pause(0.01)
-        if i % 50 == 0:
-            fig.savefig(f"Assignments/Assignment 3/Iteration{i}.png")
-        if tot_force / len(nodes_dict) < .42:
-            fig.savefig(f"Assignments/Assignment 3/FinalPosition.png")
-            break
+        plt.show()
 
-    plt.show()
+DELTA_TIME = False
+MODE = "FR"  # Out of SP (Spring-Embedder), FR (Fruchterman and Reingold)
+INERTIA = True
+GRAVITY = True
+
+DT = 0.01
+
+# generates a subfolder with json clusters
+FILE_NAME = "Networks/ArgumentationNetwork.dot"
+
+# TODO: get this one to work
+# FILE_NAME = "Networks/BlogosphereNetwork.dot"
+
+number_of_sims = 100#5000
+
+renderNodePositions(FILE_NAME, number_of_sims)
