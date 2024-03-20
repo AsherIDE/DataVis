@@ -34,6 +34,9 @@ class Node:
     def set_quad_pos(self, quad_pos: str):
         self.quadtree_pos = quad_pos
 
+"""
+Below all force-directed functions
+"""
 
 def plot_graph(nodes_dict: dict[str, Node], edge_list, ax, force_plot):
     x_poss = np.array([node.pos.x for name, node in nodes_dict.items()])
@@ -183,6 +186,8 @@ def init_sim(G: pydot.Dot, cluster, init_mode="stoch") -> tuple[dict[str:Node], 
 
     nodes_dict = {name: Node(name, start_poss[name]) for name in node_list}
 
+    remaining_node_list = [point.get_name() for point in cluster.get_node_list()]
+    temporal_binding_node_name = ""
     for edge in edge_list:
         source = edge.get_source()
         dest = edge.get_destination()
@@ -194,6 +199,42 @@ def init_sim(G: pydot.Dot, cluster, init_mode="stoch") -> tuple[dict[str:Node], 
 
         nodes_dict[source].add_adjacent(dest, attr)
         nodes_dict[dest].add_adjacent(source, attr)
+
+        temporal_binding_node_name = source
+
+        # remove nodes that have edges
+        if source in remaining_node_list:
+            remaining_node_list.remove(source)
+        if dest in remaining_node_list:
+            remaining_node_list.remove(dest)
+
+    # add temportal edges to get them to stay near the other nodes
+    if len(remaining_node_list) > 0:
+        # no nodes are bound, so pick random node to bind to
+        if len(remaining_node_list) == len(node_list):
+            temporal_binding_node_name = node_list[0]
+            remaining_node_list.pop(0)
+        
+        for node_to_bind in remaining_node_list:
+            nodes_dict[temporal_binding_node_name].add_adjacent(node_to_bind, {'edge_type': 'support'})
+
+        temporal_nodes_to_bind = []
+        temporal_binding_node = None
+        for node in cluster.get_node_list():
+            # node to bind to temporal binding node
+            if node.get_name() in remaining_node_list:
+                temporal_nodes_to_bind.append(node)
+            # temporal binding node
+            elif node.get_name() == temporal_binding_node_name:
+                temporal_binding_node = node
+
+        temporal_edges = []
+        for temporal_node_to_bind in temporal_nodes_to_bind:
+            temporal_edges.append(pydot.Edge(temporal_binding_node, temporal_node_to_bind, ltail=temporal_binding_node.get_name(), lhead=temporal_node_to_bind.get_name()))
+
+        edge_list = edge_list + temporal_edges
+        print(f"+{cluster.obj_dict['name']} [{remaining_node_list}]")
+
 
     for name, node in nodes_dict.items():
         node.calc_own_weight()
@@ -220,7 +261,6 @@ def export_node_positions(nodes_dict: dict[str, Node], path):
     }
     with open(path, 'w') as fp:
         json.dump(export_dict, fp, indent=3)
-
 
 def renderNodePositions(FILE_NAME, number_of_sims):
     if __name__ == "__main__":
@@ -257,10 +297,12 @@ def renderNodePositions(FILE_NAME, number_of_sims):
                 plt.pause(0.01)
                 if i % 50 == 0:
                     # fig.savefig(f"Assignments/Assignment 3/Iteration{i}.png")
-                    export_node_positions(nodes_dict, path)
+                    # export_node_positions(nodes_dict, path)
+                    print(f"+{cluster.obj_dict['name']} [JSON]")
                 if tot_force / len(nodes_dict) < .42:
                     # fig.savefig(f"Assignments/Assignment 3/FinalPosition.png")
                     export_node_positions(nodes_dict, path)
+                    print(f"+{cluster.obj_dict['name']} [JSON][end]")
                     break
 
         plt.show()
@@ -278,6 +320,6 @@ FILE_NAME = "Networks/ArgumentationNetwork.dot"
 # TODO: get this one to work
 # FILE_NAME = "Networks/BlogosphereNetwork.dot"
 
-number_of_sims = 100#5000
+number_of_sims = 1#5000
 
 renderNodePositions(FILE_NAME, number_of_sims)
