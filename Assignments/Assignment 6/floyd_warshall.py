@@ -10,9 +10,14 @@ def floyd_warshall(G):
 
     # redefine existing edge weight values
     for edge in G.get_edge_list():
-        # print(edge.get_source(), edge.get_destination(), edge.get_weight())
-        D[int(edge.get_source()) - 1, int(edge.get_destination()) - 1] = edge.get_weight()
-        D[int(edge.get_destination()) - 1, int(edge.get_source()) - 1] = edge.get_weight()
+        
+        # assume weight of 1 if weights arent available
+        if edge.get_weight() == None:
+            D[int(edge.get_source()) - 1, int(edge.get_destination()) - 1] = 1
+            D[int(edge.get_destination()) - 1, int(edge.get_source()) - 1] = 1
+        else:
+            D[int(edge.get_source()) - 1, int(edge.get_destination()) - 1] = edge.get_weight()
+            D[int(edge.get_destination()) - 1, int(edge.get_source()) - 1] = edge.get_weight()
 
     # set diagonals to 0
     for i in range(len(V)):

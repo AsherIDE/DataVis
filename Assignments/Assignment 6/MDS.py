@@ -6,6 +6,9 @@ from sklearn.manifold import MDS
 
 # testing 
 FILE_NAME = 'Networks/LesMiserables.dot'
+# FILE_NAME = 'Networks/JazzNetwork.dot'
+# FILE_NAME = 'Networks/LeagueNetwork.dot'
+
 G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
 X = floyd_warshall(G)
