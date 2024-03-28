@@ -4,7 +4,7 @@ import random
 import pydot
 import numpy as np
 
-def plot_graph(ax:plt.Axes, coords_list:dict, adjacency_list:dict):
+def plot_graph(ax:plt.Axes, coords_list:dict, adjacency_list:dict, node_positions):
     for node, position in coords_list.items():
         ax.scatter(position[0], position[1], color='red', zorder=2, s=130)
         ax.text(position[0], position[1]-0.04, node, c='black', fontsize=8, ha='center', va='bottom')
@@ -12,6 +12,7 @@ def plot_graph(ax:plt.Axes, coords_list:dict, adjacency_list:dict):
     # Draw edges
     for node, neighbors in adjacency_list.items():
         for neighbor in neighbors:
+
             ax.plot([node_positions[node][0], node_positions[neighbor[0]][0]],
                     [node_positions[node][1], node_positions[neighbor[0]][1]], color='black', zorder=1)
     ax.set_title('Graph Visualization')
@@ -50,22 +51,25 @@ def apply_force_on_node(coord, velocity, force, drag, dt, mass=1):
     velocity = (acceleration * dt + velocity) * drag
     coord += velocity*dt
     return coord, velocity
+
+def drawRandom(FILE_NAME):
+    FILE_NAME = f'Networks/{FILE_NAME}.dot'
+    G = pydot.graph_from_dot_file(FILE_NAME)[0]
     
-FILE_NAME = 'Networks/LesMiserables.dot'
+    # Define the adjacency list
+    adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
 
-G = pydot.graph_from_dot_file(FILE_NAME)[0]
+    node_positions = {}
+    for i, node in enumerate(adjacency_list.keys()):
+        x = random.uniform(0, 1)  
+        y = random.uniform(0, 1)
+        
+        node_positions[node] = (x, y)
 
-# Define the adjacency list
-adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
+    fig, ax = plt.subplots()
+    plot_graph(ax, node_positions, adjacency_list, node_positions)
 
-node_positions = {}
-for i, node in enumerate(adjacency_list.keys()):
-    x = random.uniform(0, 1)  
-    y = random.uniform(0, 1)
-    
-    node_positions[node] = (x, y)
+    plt.show()
 
-fig, ax = plt.subplots()
-plot_graph(ax, node_positions, adjacency_list)
-
-plt.show()
+# TEST
+# drawRandom("LesMiserables")

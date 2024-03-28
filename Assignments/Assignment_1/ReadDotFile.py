@@ -1,14 +1,13 @@
-# import pydot
+import pydot
 # from collections import defaultdict
 
-# FILE_NAME = 'Networks/LesMiserables.dot'
+FILE_NAME = 'Networks/LesMiserables.dot'
 
-# G = pydot.graph_from_dot_file(FILE_NAME)[0]  
+G = pydot.graph_from_dot_file(FILE_NAME)[0]  
     
 def find_key(adjacency_list, item):
     for key, value_list in adjacency_list.items():
         for value in value_list:
-
             if item in value[0]:
                 return key
     return None 
