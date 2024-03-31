@@ -4,7 +4,6 @@ import numpy as np
 
 from nodeSorting import bfs, removeAdjacencyListWeights, getStartNode
 from ReadDotFile import CreateAdjacencyList
-from nodeTreePositioning import getOffsets, getMissingNodes, getCoordinates
 from DFSImplementation import UnpackAdjacencyList, findDFSOrder, CreateSubtree
 
 from pathlib import Path
@@ -22,38 +21,38 @@ from pathlib import Path
 # Create easy to interpret list with tree depth levels
 # Input --> Bfs output
 # Output --> List of levels: [{node: [children]}, {node: [children]}]
-def organizeBfsOutput(input):
-    output = []
-    level = {}
-    lower_level_nodes = []
+# def organizeBfsOutput(input):
+#     output = []
+#     level = {}
+#     lower_level_nodes = []
     
-    for edge in input:
-        top_node, bottom_node = edge[0], edge[1]
+#     for edge in input:
+#         top_node, bottom_node = edge[0], edge[1]
         
-        # check if a new node has to be added to the list of nodes for the current level
-        if top_node not in lower_level_nodes:
-            if top_node in level.keys():
-                level[top_node] = level[top_node] + [bottom_node]
+#         # check if a new node has to be added to the list of nodes for the current level
+#         if top_node not in lower_level_nodes:
+#             if top_node in level.keys():
+#                 level[top_node] = level[top_node] + [bottom_node]
 
-            else:
-                level[top_node] = [bottom_node]
+#             else:
+#                 level[top_node] = [bottom_node]
             
-            # list of nodes that shouldnt be on the current level
-            lower_level_nodes.append(bottom_node)
+#             # list of nodes that shouldnt be on the current level
+#             lower_level_nodes.append(bottom_node)
         
-        # descend to new level
-        else:
-            output.append(level)
-            level = {}
-            lower_level_nodes = []
+#         # descend to new level
+#         else:
+#             output.append(level)
+#             level = {}
+#             lower_level_nodes = []
 
-            # add the current top node to the next level already (in the next iteration it will otherwise be forgotten)
-            level[top_node] = [bottom_node]
+#             # add the current top node to the next level already (in the next iteration it will otherwise be forgotten)
+#             level[top_node] = [bottom_node]
 
-    # add the last level after the last iteration
-    output.append(level)
+#     # add the last level after the last iteration
+#     output.append(level)
 
-    return output
+#     return output
 
 # def organizeDFSoutput(DFSorder):
 #     last_depth = 0
@@ -90,7 +89,7 @@ def organizeBfsOutput(input):
 #         depth_last_added_node_dict[depth] = node
 #     return output
 
-def get_dfs_coords(DFSOrder):
+def get_dfs_coords(DFS_order):
     output = {}
     depth_dict = {}
     for node, depth in DFS_order:
@@ -109,7 +108,7 @@ Below is where we actually start visualizing the tree
 # Define the adjacency list
 # FILE_NAME = '../Networks/LesMiserables.dot'
 Data_path = Path.cwd()
-Data_path = Data_path.parent.parent / 'Networks' / 'LesMiserables.dot'
+Data_path = Data_path / 'Networks' / 'LesMiserables.dot'
 FILE_NAME = str(Data_path)
 G = pydot.graph_from_dot_file(FILE_NAME)[0]
 central_node = 11
@@ -117,12 +116,14 @@ mode= 'pre'
 
 # Bfs tree
 adjacency_list = CreateAdjacencyList(G.get_node_list(), G.get_edge_list())
-top_node = getStartNode(adjacency_list)
 verts, edges = UnpackAdjacencyList(adjacency_list)
+
 adjacency_sans_weights = removeAdjacencyListWeights(adjacency_list)
 edges = np.squeeze([edge for edge in edges if edge[2]>0])
 subtree_edges = CreateSubtree(verts, edges)
 DFS_order = findDFSOrder(subtree_edges, central_node, mode)
+
+print(DFS_order)
 
 node_coords = get_dfs_coords(DFS_order)
 

@@ -7,10 +7,10 @@ def UnpackAdjacencyList(adjacency_list: dict)->tuple[np.ndarray, np.ndarray]:
     edges = []
     for key, edge_list in adjacency_list.items():
         for edge in edge_list:
-            edges.append([int(key), int(edge[0]), int(edge[1])])
+            edges.append([key, edge])
     return verts, np.array(edges)
 
-def CreateSubtree(verts: np.ndarray, edges:np.ndarray, initial_nodeid: int = 0)-> dict:
+def CreateSubtree(verts: np.ndarray, edges:np.ndarray)-> dict:
     cleared_nodes = []
     subtree_edges = {}
     
@@ -26,16 +26,19 @@ def CreateSubtree(verts: np.ndarray, edges:np.ndarray, initial_nodeid: int = 0)-
             cleared_nodes.append(edge[1])
             
         if edge[0] not in subtree_edges:
-            subtree_edges[edge[0]] = (edge[1], edge[2])
+            subtree_edges[edge[0]] = edge[1]
         else:
-            subtree_edges[edge[1]] = (edge[0], edge[2])
+            subtree_edges[edge[1]] = edge[0]
 
-    return subtree_edges
+    return verts, subtree_edges
 
-def findDFSOrder(edges:np.ndarray, node:int, mode:str='pre')->np.ndarray:
+def findDFSOrder(edges:np.ndarray, node:str, mode:str='pre')->np.ndarray:
+    subtree_verts, subtree_edges = CreateSubtree(*UnpackAdjacencyList(edges))
+    
     visited_nodes = []
-    depth_list = []
+    # depth_list = []
     backtrack = []
+    out_list = []
     selected_node = node
     found_child = False
     depth=0
@@ -45,7 +48,7 @@ def findDFSOrder(edges:np.ndarray, node:int, mode:str='pre')->np.ndarray:
             parent_nodes = [0]
             
         connected_nodes = []
-        for node_current, (neighbor, weight) in edges.items():
+        for node_current, neighbor in edges.items():
             if node_current  == node and neighbor != parent_nodes[-1]:
                 connected_nodes.append(neighbor)
             elif neighbor == node and node_current != parent_nodes[-1]:
@@ -53,16 +56,18 @@ def findDFSOrder(edges:np.ndarray, node:int, mode:str='pre')->np.ndarray:
         return connected_nodes
     
     if mode == 'pre':
-        while len(visited_nodes) < len(edges)+1:
+        while len(visited_nodes) < len(subtree_edges) + 1:
             found_child = False
             if selected_node not in visited_nodes:
                 visited_nodes.append(selected_node)
-                depth_list.append(depth)
-            child_nodes = find_connected(edges, selected_node, backtrack)
-            if len(child_nodes) > 0:
+                # depth_list.append(depth)
+            if selected_node in subtree_edges:
+                child_nodes = find_connected(subtree_edges, selected_node, backtrack)
+            # if len(child_nodes) > 0:
                 for child_node in child_nodes:
                     if child_node in visited_nodes:
                         continue
+                    out_list.append((selected_node, child_node))
                     backtrack.append(selected_node)
                     selected_node = child_node
                     depth += 1
@@ -76,7 +81,7 @@ def findDFSOrder(edges:np.ndarray, node:int, mode:str='pre')->np.ndarray:
                 selected_node = backtrack[-1]
                 depth -= 1
                 backtrack.pop(-1)
-    return np.array([visited_nodes, depth_list]).T
+    return out_list
                 
 def RadialGraph(DFS_order, subtree_edges, mode='pre'):
     coords = {}
@@ -97,7 +102,7 @@ def RadialGraph(DFS_order, subtree_edges, mode='pre'):
                 subtree_len += 1
         if len(sub_nodes) > 0:
             if node[1] == 0:
-                coords[node[0]] = (0.0,0.0, len(edges))
+                coords[node[0]] = (0.0,0.0)
                 arc = [0, 2*np.pi]
                 angle_distr = np.linspace(arc[0], arc[1], len(sub_nodes), endpoint=False)
                 node_angle = 0
