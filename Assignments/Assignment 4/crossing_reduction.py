@@ -3,7 +3,10 @@ import statistics
 import matplotlib.pyplot as plt
 from removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
 from layerAssigning import CreateLayerAssignment
-from scipy.optimize import minimize
+from shapely import LineString
+import math
+from floyd_warshall import floyd_warshall
+from scipy import stats
 
 
 def create_dummies_and_lists(result):
@@ -223,7 +226,6 @@ def reverse_edges_no_dummies(connections_list, reversed_edges):
         else:
             new_connections_list += [(i[0], i[1])]
             
-    print(new_connections_list)
     return new_connections_list
 
 
@@ -231,6 +233,7 @@ def reverse_edges_no_dummies(connections_list, reversed_edges):
 def plot_final_graph(result, layer_list, connections_list):
 
     coords = {}
+    edge_coords = []
     for l, v in result.items():
         current_layer = layer_list[l-1]
         breadth = len(current_layer)
@@ -253,10 +256,11 @@ def plot_final_graph(result, layer_list, connections_list):
         elif i[1].startswith('d'):
             plt.annotate('', xy = coords[i[1][1:].split('.')[0]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='violet'), zorder = 1, alpha = 0.7)
         else:
+            edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
             if len(i) == 2:
-                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='violet'), zorder = 1, alpha = 0.7)
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="-", color='violet'), zorder = 1, alpha = 0.7)
             else:
-                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='green'), zorder = 1, alpha = 0.9)
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="-", color='green'), zorder = 1, alpha = 0.9)
 
     for i in list(result.keys()):
         plt.axhline(y = i, color = 'black', linestyle = '-', linewidth = 0.3, zorder = 0) 
@@ -266,6 +270,7 @@ def plot_final_graph(result, layer_list, connections_list):
     plt.xticks([])
     #plt.yticks([])
     plt.show()
+    return edge_coords, coords
 
 
 
@@ -274,7 +279,10 @@ def plot_final_graph(result, layer_list, connections_list):
 # FILE_NAME = 'Networks/SmallDirectedNetwork.dot'
 # G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-FILE_NAME = 'Networks/LeagueNetwork.dot'
+# FILE_NAME = 'Networks/LeagueNetwork.dot'
+# G = pydot.graph_from_dot_file(FILE_NAME)[0]
+
+FILE_NAME = 'Networks/LesMiserables.dot'
 G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
 adj_test_list = CreateDirectedAdjacencyList(G.get_edge_list())
@@ -287,8 +295,82 @@ connections_list, coords = create_dummies_and_lists(result)
 layer_list = create_layer_list(result)
 new_layer_list, crossing_list = reduce_crossings_median(result, layer_list, connections_list)
 connections_list_new = reverse_edges_no_dummies(connections_list, reversed_edges)
-plot_final_graph(result, new_layer_list, connections_list_new)
-print(reversed_edges)
+coords, node_coords = plot_final_graph(result, new_layer_list, connections_list_new)
+
+### ---- QUALITY METRICS ---- ###
+
+
+def calculate_angle(edge1, edge2, layer_count):
+    e1_new = [(edge1[0][0]-edge1[1][0]), (edge1[0][1]/layer_count-edge1[1][1]/layer_count)]
+    e2_new = [(edge2[0][0]-edge2[1][0]), (edge2[0][1]/layer_count-edge2[1][1]/layer_count)]
+    dot_product = (e1_new[0]*e2_new[0]) + (e1_new[1]*e2_new[1])
+    len_e1 = ((e1_new[0]*e1_new[0]) + (e1_new[1]*e1_new[1]))**0.5
+    len_e2 = ((e2_new[0]*e2_new[0]) + (e2_new[1]*e2_new[1]))**0.5
+    cos_angle = dot_product/(len_e1*len_e2)
+    angle = math.acos(cos_angle)
+    angle_deg = math.degrees(angle)
+    return angle_deg
+
+
+X = floyd_warshall(G)
+
+coords_list = []
+smallest_angle = 360
+crossing_count = 0
+pairs_list = []
+data_dist_list = []
+graph_dist_list = []
+stress = 0 
+normalization = 0
+
+
+# calculate number of crossings and smallest angle
+for edge in coords:
+        current_coord = edge
+
+        for coord in coords_list: 
+
+            if LineString(current_coord).crosses(LineString(coord)):
+               crossing_count += 1
+               angle = calculate_angle(current_coord, coord, len(new_layer_list))
+               
+               if angle < smallest_angle:
+                    smallest_angle = angle
+                    print(angle)
+            
+        coords_list += [current_coord]
+
+
+# calculate stress
+for i in range(1, 78):
+    pairs_list.append(node_coords[str(i)])
+
+
+for i in range(len(pairs_list)):
+    for j in range(i+1, len(pairs_list)):
+        [x1, y1] = pairs_list[i]
+        [x2, y2] = pairs_list[j]
+        data_distance = X[i][j]
+        graph_distance = math.dist([x1, y1], [x2, y2])
+        data_dist_list.append(data_distance)
+        graph_dist_list.append(graph_distance)
+        stress += (data_distance - graph_distance)**2
+        normalization += data_distance**2
+    
+
+# plot shepard
+plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
+plt.show()
+spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
+
+# normalized stress
+norm_stress = stress/normalization
+
+# results
+print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
+
+
+
 
 
 

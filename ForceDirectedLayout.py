@@ -3,7 +3,10 @@ import pydot
 import numpy as np
 from quadtree_3rd_party import Point, Rect, QuadTree
 import json
-
+from shapely import LineString
+import math
+from floyd_warshall import floyd_warshall
+from scipy import stats
 
 class Node:
 
@@ -229,7 +232,7 @@ if __name__ == "__main__":
 
     nodes_dict, edges_list = init_sim(G, init_mode="stoch")
 
-    number_of_sims = 5000
+    number_of_sims = 1051
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 6))
     tot_force_plot = []
@@ -258,3 +261,79 @@ if __name__ == "__main__":
             break
 
     plt.show()
+
+
+### ---- QUALITY METRICS ---- ###
+    
+def calculate_angle(edge1, edge2):
+    e1_new = [(edge1[0][0]-edge1[1][0]), (edge1[0][1]-edge1[1][1])]
+    e2_new = [(edge2[0][0]-edge2[1][0]), (edge2[0][1]-edge2[1][1])]
+    dot_product = (e1_new[0]*e2_new[0]) + (e1_new[1]*e2_new[1])
+    len_e1 = ((e1_new[0]*e1_new[0]) + (e1_new[1]*e1_new[1]))**0.5
+    len_e2 = ((e2_new[0]*e2_new[0]) + (e2_new[1]*e2_new[1]))**0.5
+    cos_angle = dot_product/(len_e1*len_e2)
+    angle = math.acos(cos_angle)
+    angle_deg = math.degrees(angle)
+    return angle_deg
+
+# starting values
+coords_list = []
+crossing_count = 0
+smallest_angle = 360
+X = floyd_warshall(G)
+pair_list = []
+data_dist_list = []
+graph_dist_list = []
+stress = 0 
+normalization = 0
+
+# calculate crossing count and smallest angle 
+
+for edge in edges_list:
+        source_pos = nodes_dict[edge.get_source()].pos
+        dest_pos = nodes_dict[edge.get_destination()].pos
+        current_coord = [(source_pos.x, source_pos.y), (dest_pos.x, dest_pos.y)]
+        for coord in coords_list: 
+            if LineString(current_coord).crosses(LineString(coord)):
+               crossing_count += 1
+               angle = calculate_angle(current_coord, coord)
+               
+               if angle < smallest_angle:
+                    smallest_angle = angle
+        coords_list += [current_coord]
+
+
+# calculate stress of layout
+for i in range(1,78):
+    x = nodes_dict[str(i)].pos.x
+    y = nodes_dict[str(i)].pos.y
+    pair_list.append([x, y])
+
+for i in range(len(pair_list)):
+    for j in range(i+1, len(pair_list)):
+        [x1, y1] = pair_list[i]
+        [x2, y2] = pair_list[j]
+        data_distance = X[i][j]
+        graph_distance = math.dist([x1, y1], [x2, y2])
+        data_dist_list.append(data_distance)
+        graph_dist_list.append(graph_distance)
+        stress += (data_distance - graph_distance)**2
+        normalization += data_distance**2
+    
+
+
+# plot shepard
+plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
+plt.show()
+spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
+
+# calculate normalized stress
+norm_stress = stress/normalization
+
+# results
+print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
+
+
+
+
+
