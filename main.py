@@ -25,6 +25,18 @@ from typing import List
 from Assignments.Assignment_1.Random import drawRandom
 from Assignments.Assignment_1.Circle import drawCircle
 
+from Assignments.Assignment_2.nodeTreePositioning import drawTree
+
+from Assignments.Assignment_3.ForceDirectedLayout import drawForceDirected
+
+from Assignments.Assignment_4.crossing_reduction import drawLayered, drawLayeredQuality
+
+from Assignments.Assignment_5.edgeBundling import drawClusters
+
+from Assignments.Assignment_6.MDS import drawMDS
+from Assignments.Assignment_6.tsne import drawtSNE
+from Assignments.Assignment_6.mds_quality import drawMDSQuality
+
 @dataclass
 class Network:
     files: List
@@ -50,7 +62,7 @@ networks = {'Simple': Network(['LesMiserables', 'LeagueNetwork'],
             'Force-directed': Network(['LesMiserables', 'JazzNetwork', 'SmallDirectedNetwork', 'LeagueNetwork'],
                                       [],
                                       []), 
-            'Layered': Network(['SmallDirectedNetwork', 'LeagueNetwork'],
+            'Layered': Network(['LesMiserables', 'SmallDirectedNetwork', 'LeagueNetwork'],
                                [],
                                []), 
             'Clustered': Network(['ArgumentationNetwork'],
@@ -59,9 +71,9 @@ networks = {'Simple': Network(['LesMiserables', 'LeagueNetwork'],
             'Projections': Network(['LesMiserables', 'JazzNetwork', 'LeagueNetwork'],
                                    ['Multidimensional scaling', 't-distributed stochastic neighbor embedding'],
                                    []), 
-            'Quality-measurement': Network(['TODOTODO', 'TODO2'],
-                                         ['TODO yes'],
-                                         ['TODO row3', 'TODO testing'])} # + network
+            'Quality-measurement': Network(['LesMiserables', 'SmallDirectedNetwork', 'LeagueNetwork'],
+                                         ['Multidimensional scaling', 'Layered network'],
+                                         [])} # + network
 
 def display_title():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -188,18 +200,39 @@ def draw_visualization(settings_dict):
         else:
             drawRandom(settings_dict['file'])
 
+    # TODO: start_node setting
     elif settings_dict['name'] == 'Tree':
-        print("TODO")
+        fontsize, nodesize, xy = 5, 30, (110, -1.4)
+        if settings_dict['file'] == 'LesMiserables':
+            fontsize, nodesize, xy = 12, 100, (4, -0.9)
+
+        if settings_dict['algorithm'] == 'Breadth-first search':
+            drawTree(settings_dict['file'], fontsize, nodesize, xy)
+        else:
+            drawTree(settings_dict['file'], fontsize, nodesize, xy, MODE='dfs', START_NODE= '1')
+
+    # TODO: iterations setting
     elif settings_dict['name'] == 'Force-directed':
-        print("TODO")
+        drawForceDirected(settings_dict['file'])
+
+    # TODO: medion or barycenter setting, dummies and no dummies (reverse edges)
     elif settings_dict['name'] == 'Layered':
-        print("TODO")
+        drawLayered(settings_dict['file'])
+        
     elif settings_dict['name'] == 'Clustered':
-        print("TODO")
+        drawClusters(settings_dict['file'])
+        
     elif settings_dict['name'] == 'Projections':
-        print("TODO")
+        if settings_dict['algorithm'] == 'Multidimensional scaling':
+            drawMDS(settings_dict['file'])
+        else:
+            drawtSNE(settings_dict['file'])
+
     elif settings_dict['name'] == 'Quality-measurement':
-        print("TODO")
+        if settings_dict['algorithm'] == 'Multidimensional scaling':
+            drawMDSQuality(settings_dict['file'])
+        else:
+            drawLayeredQuality(settings_dict['file'])
 
     display_visualizations()
 
