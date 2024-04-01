@@ -39,10 +39,10 @@ def drawMDS(FILE_NAME):
     plt.yticks([])
 
     plt.show()
-
+    return G, X, X_transformed
 # TEST
-FILE_NAME = 'LesMiserables'
+# FILE_NAME = 'LesMiserables'
 # FILE_NAME = 'JazzNetwork'
 # FILE_NAME = 'LeagueNetwork'
-drawMDS(FILE_NAME)
+
 
