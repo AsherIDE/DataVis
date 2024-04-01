@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 
 from nodeSorting import bfs, removeAdjacencyListWeights, getStartNode
 from ReadDotFile import CreateAdjacencyList
+from DFSImplementation import findDFSOrder
 
 from typing import List
 from dataclasses import dataclass
@@ -67,6 +68,33 @@ def organizeBfsOutput(input):
 
     return tree, connections
 
+def organizeDFSOutput(order_list):
+    connections = {}
+    for edge in order_list:
+        top_node, bottom_node = edge[0], edge[1]
+        if top_node not in connections:
+            connections[top_node] = []
+        connections[top_node].append(bottom_node)
+    # Creates a tree out of a dict with connections
+    # id = first node, connections
+    def makeTree(id, connections):
+        child_ids = connections.get(id, [])
+        children = []
+        leaf_count = 0
+        for child_id in child_ids:
+            child = makeTree(child_id, connections)
+            children.append(child)
+            if len(child.children) == 0:
+                leaf_count += 1
+            else:
+                leaf_count += child.leaf_count
+
+        return Node(id, children, leaf_count)
+
+    tree = makeTree(list(connections.keys())[0], connections)
+    
+    return tree, connections
+
 # Recursive function to iterate the tree and get all coords
 def buildTreeCoords(tree, x = 0, y = 0):
     Coords = {tree.id: (x + tree.leaf_count / 2, y)}
@@ -101,17 +129,30 @@ def getMissingNodes(nodes_tree, adjacency_list):
     return nodes_missing
 
 # Draw the actual tree from a file and some settings (xy being the left out nodes positions)
-def drawTree(FILE_NAME, fontsize, circlesize, xy):
+def drawTree(FILE_NAME, fontsize, circlesize, xy, MODE='bfs', START_NODE=None):
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
     # bfs tree
     adjacency_list = removeAdjacencyListWeights(CreateAdjacencyList(G.get_node_list(), G.get_edge_list()))
     total_nodes = [node.get_name() for node in G.get_node_list()]
-    top_node = getStartNode(adjacency_list, total_nodes)[0]
-    bfs_list = bfs(adjacency_list, top_node)
+    
+    if START_NODE is None:
+        top_node = getStartNode(adjacency_list, total_nodes)[0]
+    else:
+        top_node = START_NODE
+    
+    match MODE:
+        case 'bfs':
+            order_list = bfs(adjacency_list, top_node)
+            tree, connections = organizeBfsOutput(order_list)
+        case 'dfs':
+            order_list = findDFSOrder(adjacency_list, top_node)
+            tree, connections = organizeDFSOutput(order_list)
+        case _:
+            raise ValueError()
 
     # put bfs into tree format
-    tree, connections = organizeBfsOutput(bfs_list)
+    # print(tree, connections)
 
     # retrieve coords
     coords = buildTreeCoords(tree)
@@ -149,13 +190,13 @@ def drawTree(FILE_NAME, fontsize, circlesize, xy):
     # draw the nodes and edges (based on tree connections)
     drawn_edges = []
     for node, position in coords.items():
-        plt.scatter(position[0], position[1], color='#808080', zorder=3, s=circlesize)
-        plt.text(position[0], position[1]-0.02, node, fontsize=fontsize, ha='center', va='bottom', zorder=4, color='black')
+        plt.scatter(position[0], position[1], color='red', zorder=3, s=circlesize)
+        # plt.text(position[0], position[1]-0.02, node, fontsize=fontsize, ha='center', va='bottom', zorder=4, color='black')
 
         if node in connections:
             for child in connections[node]:
                 plt.plot([position[0], coords[child][0]],
-                        [position[1], coords[child][1]], color="#325A9B", zorder=2, alpha=0.8)
+                        [position[1], coords[child][1]], color="black", zorder=2, alpha=0.4)
                 
                 drawn_edges.append((node, child))
                 
@@ -188,7 +229,7 @@ def drawTree(FILE_NAME, fontsize, circlesize, xy):
 
 # les miserables
 FILE_NAME = 'Networks/LesMiserables.dot'
-drawTree(FILE_NAME, 12, 350, (4, -0.9))
+drawTree(FILE_NAME, 12, 100, (4, -0.9), MODE='dfs', START_NODE= '1')
 
 
 

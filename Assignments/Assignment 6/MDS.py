@@ -7,106 +7,42 @@ from sklearn.manifold import MDS
 from shapely import LineString
 from scipy import stats
 
-# testing 
-FILE_NAME = 'Networks/LesMiserables.dot'
-# FILE_NAME = 'Networks/JazzNetwork.dot'
-# FILE_NAME = 'Networks/LeagueNetwork.dot'
+def drawMDS(FILE_NAME):
+    FILE_NAME = f'Networks/{FILE_NAME}.dot'
+    G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-G = pydot.graph_from_dot_file(FILE_NAME)[0]
+    X = floyd_warshall(G)
 
-X = floyd_warshall(G)
+    embedding = MDS(n_components=2, normalized_stress='auto', dissimilarity='precomputed')
 
-embedding = MDS(n_components=2, dissimilarity='precomputed')
+    X_transformed = embedding.fit_transform(X)
 
-X_transformed = embedding.fit_transform(X)
+    # simple way to scatter
+    # plt.scatter(*zip(*X_transformed))
 
-# simple way to scatter
-# plt.scatter(*zip(*X_transformed))
+    # scatter nice plot
+    for i in range(len(X_transformed)):
+        x, y = X_transformed[i]
 
-# scatter nice plot
-for i in range(len(X_transformed)):
-    x, y = X_transformed[i]
+        plt.scatter(x, y, color="#EECA3B", zorder=2, s=50)
+        plt.text(x, y, i, fontsize=5, ha='center', va='center', zorder=3, color='black')
 
-    plt.scatter(x, y, color="#EECA3B", zorder=2, s=50)
-    plt.text(x, y, i, fontsize=5, ha='center', va='center', zorder=3, color='black')
+    # draw edges
+    for edge in G.get_edge_list():
+        source, sink = X_transformed[int(edge.get_source()) - 1], X_transformed[int(edge.get_destination()) - 1]
 
-# draw edges
-for edge in G.get_edge_list():
-    source, sink = X_transformed[int(edge.get_source()) - 1], X_transformed[int(edge.get_destination()) - 1]
+        plt.plot([source[0], sink[0]],
+                [source[1], sink[1]], color="black", zorder=1, alpha=0.1)
 
-    plt.plot([source[0], sink[0]],
-            [source[1], sink[1]], color="black", zorder=1, alpha=0.1)
+    plt.title('Multidimensional scaling')
+    plt.xticks([])
+    plt.yticks([])
 
-plt.title('Multidimensional scaling')
-plt.xticks([])
-plt.yticks([])
+    plt.show()
 
-plt.show()
-
-### ---- QUALITY METRICS ---- ###
-
-def calculate_angle(edge1, edge2):
-    e1_new = [(edge1[0][0]-edge1[1][0]), (edge1[0][1]-edge1[1][1])]
-    e2_new = [(edge2[0][0]-edge2[1][0]), (edge2[0][1]-edge2[1][1])]
-    dot_product = (e1_new[0]*e2_new[0]) + (e1_new[1]*e2_new[1])
-    len_e1 = ((e1_new[0]*e1_new[0]) + (e1_new[1]*e1_new[1]))**0.5
-    len_e2 = ((e2_new[0]*e2_new[0]) + (e2_new[1]*e2_new[1]))**0.5
-    cos_angle = dot_product/(len_e1*len_e2)
-    angle = math.acos(cos_angle)
-    angle_deg = math.degrees(angle)
-    return angle_deg
-
-
-coords_list = []
-crossing_count = 0
-smallest_angle = 360
-data_dist_list = []
-graph_dist_list = []
-stress = 0 
-normalization = 0
-
-# calculate crossing number and smallest angle 
-for edge in G.get_edge_list():
-        source, dest = X_transformed[int(edge.get_source()) - 1], X_transformed[int(edge.get_destination()) - 1]
-        #print(source, dest)
-        current_coord = [(source[0], source[1]), (dest[0], dest[1])]
-        for coord in coords_list: 
-            # crossings
-            if LineString(current_coord).crosses(LineString(coord)):
-               crossing_count += 1
-               angle = calculate_angle(current_coord, coord)
-               
-            # smallest angle
-               if angle < smallest_angle:
-                    smallest_angle = angle
-            # stress
-
-        coords_list += [current_coord]
-
-
-# calculate stress
-for i in range(len(X_transformed)):
-    for j in range(i+1, len(X_transformed)):
-        [x1, y1] = X_transformed[i]
-        [x2, y2] = X_transformed[j]
-        data_distance = X[i][j]
-        graph_distance = math.dist([x1, y1], [x2, y2])
-        data_dist_list.append(data_distance)
-        graph_dist_list.append(graph_distance)
-        stress += (data_distance - graph_distance)**2
-        normalization += data_distance**2
-    
-
-
-# plot shepard
-plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
-plt.show()
-spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
-
-# normalized stress
-norm_stress = stress/normalization
-
-# results
-print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
-
+# TEST
+FILE_NAME = 'LesMiserables'
+# FILE_NAME = 'JazzNetwork'
+# FILE_NAME = 'LeagueNetwork'
+drawMDS(FILE_NAME)
 

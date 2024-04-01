@@ -192,17 +192,20 @@ def drawGraph(G, clusters, ellipses, circlesize=100, fontsize=6):
 
     plt.show()
 
-# TODO: get this one to work
-# FILE_NAME = "Networks/BlogosphereNetwork.dot"
+if __name__ == "__main__":
+    # TODO: get this one to work
+    FILE_NAME = "Networks/newBlogosphere.dot"
 
-# combine all cluster json files into one and get the filepath
-FILE_NAME = "Networks/ArgumentationNetwork.dot"
-path = combineJSON("Assignments/Assignment 5/nodePositions/ArgumentationNetwork")
-# path = "Assignments/Assignment 5/nodePositions/Overall/ArgumentationNetwork.json"
+    # combine all cluster json files into one and get the filepath
+    # FILE_NAME = "Networks/ArgumentationNetwork.dot"
+    # path = combineJSON("Assignments/Assignment 5/nodePositions/ArgumentationNetwork")
+    path = combineJSON("Assignments/Assignment 5/nodePositions/newBlogosphere")
 
-G = pydot.graph_from_dot_file(FILE_NAME)[0]
+    # path = "Assignments/Assignment 5/nodePositions/Overall/ArgumentationNetwork.json"
 
-clusters = getClusters(path, G)
-ellipses = getClusterBoxCoords(clusters)
+    G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-drawGraph(G, clusters, ellipses)
+    clusters = getClusters(path, G)
+    ellipses = getClusterBoxCoords(clusters)
+
+    drawGraph(G, clusters, ellipses)
