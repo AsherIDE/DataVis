@@ -66,19 +66,19 @@ def drawCircle(FILE_NAME):
 
     # Draw nodes
     for node, position in node_positions.items():
-        plt.scatter(position[0], position[1], color='blue', zorder=2)
-        plt.text(position[0], position[1]+0.02, node, fontsize=12, ha='center', va='bottom', zorder=3, color='red')
+        plt.scatter(position[0], position[1], color='red', zorder=2, s=130)
+        plt.text(position[0], position[1], node, fontsize=8, ha='center', va='center', zorder=3, color='black')
 
     # Draw edges
     for node, neighbors in adjacency_list.items():
         for neighbor in neighbors:
             plt.plot([node_positions[node][0], node_positions[neighbor[0]][0]],
-                    [node_positions[node][1], node_positions[neighbor[0]][1]], color='black', zorder=1)
+                    [node_positions[node][1], node_positions[neighbor[0]][1]], color='black', zorder=1, alpha=0.4)
 
 
-    plt.title('Graph Visualization')
-    plt.xlabel('X')
-    plt.ylabel('Y')
+    plt.title('Simple circle visualization')
+    # plt.xlabel('X')
+    # plt.ylabel('Y')
     plt.xticks([])
     plt.yticks([])
 

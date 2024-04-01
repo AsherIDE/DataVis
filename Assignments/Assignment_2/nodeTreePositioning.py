@@ -129,7 +129,7 @@ def getMissingNodes(nodes_tree, adjacency_list):
     return nodes_missing
 
 # Draw the actual tree from a file and some settings (xy being the left out nodes positions)
-def drawTree(FILE_NAME, fontsize, circlesize, xy, MODE='bfs', START_NODE=None):
+def drawTree(FILE_NAME, fontsize, circlesize, xy, draw_all_edges=False, MODE='bfs', START_NODE=None):
     FILE_NAME = f'Networks/{FILE_NAME}.dot'
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
@@ -192,7 +192,7 @@ def drawTree(FILE_NAME, fontsize, circlesize, xy, MODE='bfs', START_NODE=None):
     drawn_edges = []
     for node, position in coords.items():
         plt.scatter(position[0], position[1], color='red', zorder=3, s=circlesize)
-        # plt.text(position[0], position[1]-0.02, node, fontsize=fontsize, ha='center', va='bottom', zorder=4, color='black')
+        plt.text(position[0], position[1], node, fontsize=fontsize, ha='center', va='center', zorder=4, color='black')
 
         if node in connections:
             for child in connections[node]:
@@ -202,16 +202,17 @@ def drawTree(FILE_NAME, fontsize, circlesize, xy, MODE='bfs', START_NODE=None):
                 drawn_edges.append((node, child))
                 
     # draw edges (based on all connections from adjacency list)
-    # for node, neighbors in adjacency_list.items():
-        
-    #     for neighbor in neighbors:
-
-    #         # prevent already drawn vertices from being drawn again
-    #         if (node, neighbor) in drawn_edges or (neighbor, node) in drawn_edges:
-    #             continue
+    if draw_all_edges:
+        for node, neighbors in adjacency_list.items():
             
-    #         plt.plot([coords[node][0], coords[neighbor[0]][0]],
-    #                  [coords[node][1], coords[neighbor[0]][1]], color='black', zorder=1, alpha=0.4)
+            for neighbor in neighbors:
+
+                # prevent already drawn edges from being drawn again
+                if (node, neighbor) in drawn_edges or (neighbor, node) in drawn_edges:
+                    continue
+                
+                plt.plot([coords[node][0], coords[neighbor[0]][0]],
+                        [coords[node][1], coords[neighbor[0]][1]], color='black', zorder=1, alpha=0.4)
 
     plt.title('Tree Visualization')
     # plt.xlabel('X')

@@ -19,7 +19,7 @@ TODO's
 import os
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Dict
 
 # visualizations imports
 from Assignments.Assignment_1.Random import drawRandom
@@ -41,7 +41,7 @@ from Assignments.Assignment_6.mds_quality import drawMDSQuality
 class Network:
     files: List
     algorithms: List
-    settings: List
+    settings: Dict
 
 """ Networks
 ArgumentationNetwork
@@ -55,25 +55,25 @@ SmallDirectedNetwork
 # for visualization function (with values also for networks function)
 networks = {'Simple': Network(['LesMiserables', 'LeagueNetwork'], 
                               ['Random positions', 'Points on a circle'],
-                              []), 
+                              {}), 
             'Tree': Network(['LesMiserables', 'JazzNetwork'],
                             ['Breadth-first search', 'Depth-first search'],
-                            []), 
+                            {'edge drawing':['All edges', 'Only tree edges']}), 
             'Force-directed': Network(['LesMiserables', 'JazzNetwork', 'SmallDirectedNetwork', 'LeagueNetwork'],
                                       [],
-                                      []), 
+                                      {}), 
             'Layered': Network(['LesMiserables', 'SmallDirectedNetwork', 'LeagueNetwork'],
                                [],
-                               []), 
+                               {}), 
             'Clustered': Network(['ArgumentationNetwork'],
                                  [],
-                                 []), 
+                                 {}), 
             'Projections': Network(['LesMiserables', 'JazzNetwork', 'LeagueNetwork'],
                                    ['Multidimensional scaling', 't-distributed stochastic neighbor embedding'],
-                                   []), 
+                                   {}), 
             'Quality-measurement': Network(['LesMiserables', 'SmallDirectedNetwork', 'LeagueNetwork'],
                                          ['Multidimensional scaling', 'Layered network'],
-                                         [])} # + network
+                                         {})} # + network
 
 def display_title():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -136,16 +136,16 @@ def display_settings(settings_dict):
     if 'algorithm' not in settings_dict.keys():
         new_setting = 'algorithm'
         new_setting_options = network.algorithms
-    elif 'file' not in settings_dict.keys():
+    else:
         new_setting = 'file'
         new_setting_options = network.files
-    else:
-        new_setting = 'settings'
-        new_setting_options = network.settings
+    # else:
+    #     new_setting = 'settings'
+    #     new_setting_options = network.settings
 
     # head to next function if no settings are left to set
     if new_setting in settings_dict.keys():
-        draw_visualization(settings_dict)
+        display_specific_settings(settings_dict)
     # skip printing the options if <= 1
     elif len(new_setting_options) == 0:
         settings_dict[new_setting] = 'None'
@@ -187,13 +187,25 @@ def display_settings(settings_dict):
             display_settings(settings_dict)
 
 
+
+
+def display_specific_settings(settings_dict):
+    network = networks[settings_dict['name']]
+
+    if len(network.settings) == 0:
+        draw_visualization(settings_dict)
+    else:
+        print("TODO: get settings working")
+
+
+
 def draw_visualization(settings_dict):
     display_title()
 
     # print settings that were provided previously
     display_selected_settings(settings_dict)
 
-    # print(settings_dict)
+    print(settings_dict)
     if settings_dict['name'] == 'Simple':
         if settings_dict['algorithm'] == 'Points on a circle':
             drawCircle(settings_dict['file'])
@@ -204,12 +216,12 @@ def draw_visualization(settings_dict):
     elif settings_dict['name'] == 'Tree':
         fontsize, nodesize, xy = 5, 30, (110, -1.4)
         if settings_dict['file'] == 'LesMiserables':
-            fontsize, nodesize, xy = 12, 100, (4, -0.9)
+            fontsize, nodesize, xy = 6, 100, (4, -0.9)
 
         if settings_dict['algorithm'] == 'Breadth-first search':
-            drawTree(settings_dict['file'], fontsize, nodesize, xy)
+            drawTree(settings_dict['file'], fontsize, nodesize, xy, draw_all_edges=False)
         else:
-            drawTree(settings_dict['file'], fontsize, nodesize, xy, MODE='dfs', START_NODE= '1')
+            drawTree(settings_dict['file'], fontsize, nodesize, xy, draw_all_edges=False, MODE='dfs', START_NODE= '1')
 
     # TODO: iterations setting
     elif settings_dict['name'] == 'Force-directed':
