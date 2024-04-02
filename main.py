@@ -113,6 +113,16 @@ def display_selected_settings(settings_dict):
                     
                     if setting_name == 'name':
                         print(f"Picked {setting} network visualization settings:")
+                    elif setting_name == 'settings':
+
+                        if len(settings_dict['settings']) > 0:
+                            print(f" - {setting_name}:")
+
+                            for k, v in setting.items():
+
+                                if v != 'Irrelevant':
+                                    print(f"\t- {k}: {v}")
+
                     else:
                         print(f" - {setting_name}: {setting}")
 
@@ -219,6 +229,13 @@ def display_specific_settings(settings_dict):
 
                 # check which setting needs input
                 if setting not in settings_dict['settings']:
+
+                    # check if setting is possible with previous settings
+                    if setting == 'perplexity' and settings_dict['algorithm'] == 'Multidimensional scaling' or setting == 'root node' and settings_dict['algorithm'] == 'Breadth-first search':
+                        settings_dict['settings'][setting] = 'Irrelevant'
+                        display_specific_settings(settings_dict)
+                        break
+
                     # print the actual options
                     print(f"\nChoose {setting} options:")
 
@@ -260,7 +277,7 @@ def draw_visualization(settings_dict):
     # print settings that were provided previously
     display_selected_settings(settings_dict)
 
-    print(settings_dict)
+    # print(settings_dict)
     if settings_dict['name'] == 'Simple':
         if settings_dict['algorithm'] == 'Points on a circle':
             drawCircle(settings_dict['file'])
@@ -269,7 +286,6 @@ def draw_visualization(settings_dict):
 
     
     elif settings_dict['name'] == 'Tree':
-        # {'edge drawing':['All edges', 'Only tree edges'], 'root node':['1', '11', '52', '71']}
         fontsize, nodesize, xy = 5, 30, (110, -1.4)
         if settings_dict['file'] == 'LesMiserables':
             fontsize, nodesize, xy = 6, 100, (4, -0.9)
