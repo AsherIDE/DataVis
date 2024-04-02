@@ -1,18 +1,7 @@
 """
 TODO's
-- Fix DFS tree visualization
 - Write README file
-- Finish requirements.txt
-- Finish step 5
-- Finish step 7
 - Look at feedback from assignment 3 and onwards
-- Put force-directed .py files inside of Assignment 3 directory
-- Create all graphs in the same format? if yes, which format?
-- Create referencable functions (per assignment) so i can import them in here
-
-- Radial tree also in main.py?
-- Tree draw all edges and only draw tree edges option
-- 
 """
 
 # libs
