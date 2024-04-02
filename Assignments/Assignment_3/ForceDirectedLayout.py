@@ -236,7 +236,7 @@ MODE = "FR"  # Out of SP (Spring-Embedder), FR (Fruchterman and Reingold)
 INERTIA = True
 GRAVITY = True
 
-def drawForceDirected(FILE_NAME):
+def drawForceDirected(FILE_NAME, number_of_sims=5000):
     FILE_NAME = f'Networks/{FILE_NAME}.dot'
 
     DELTA_TIME = False
@@ -247,8 +247,6 @@ def drawForceDirected(FILE_NAME):
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
     nodes_dict, edges_list = init_sim(G, init_mode="stoch")
-
-    number_of_sims = 5000
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 6))
     tot_force_plot = []

@@ -275,7 +275,7 @@ def plot_final_graph(result, layer_list, connections_list, draw_graph=True):
         plt.clf()
     return edge_coords, coords
 
-def drawLayered(FILE_NAME, draw_graph=True):
+def drawLayered(FILE_NAME, draw_graph=True, nodummies=True, median=True):
     if draw_graph:
         FILE_NAME = f'Networks/{FILE_NAME}.dot'
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
@@ -288,8 +288,17 @@ def drawLayered(FILE_NAME, draw_graph=True):
 
     connections_list, coords = create_dummies_and_lists(result)
     layer_list = create_layer_list(result)
-    new_layer_list, crossing_list = reduce_crossings_median(result, layer_list, connections_list)
-    connections_list_new = reverse_edges_no_dummies(connections_list, reversed_edges)
+    
+    # settings
+    if median:
+        new_layer_list, crossing_list = reduce_crossings_median(result, layer_list, connections_list)
+    else:
+        new_layer_list, crossing_list = reduce_crossings_barycenter(result, layer_list, connections_list)
+
+    if nodummies:
+        connections_list_new = reverse_edges_no_dummies(connections_list, reversed_edges)
+    else:
+        connections_list_new = reverse_edges(connections_list, reversed_edges)
     
     coords, node_coords = plot_final_graph(result, new_layer_list, connections_list_new, draw_graph)
 

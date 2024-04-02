@@ -25,7 +25,7 @@ def drawMDS(FILE_NAME, draw_graph=True):
     for i in range(len(X_transformed)):
         x, y = X_transformed[i]
 
-        plt.scatter(x, y, color="#EECA3B", zorder=2, s=50)
+        plt.scatter(x, y, color="red", zorder=2, s=50)
         plt.text(x, y, i, fontsize=5, ha='center', va='center', zorder=3, color='black')
 
     # draw edges
@@ -33,7 +33,7 @@ def drawMDS(FILE_NAME, draw_graph=True):
         source, sink = X_transformed[int(edge.get_source()) - 1], X_transformed[int(edge.get_destination()) - 1]
 
         plt.plot([source[0], sink[0]],
-                [source[1], sink[1]], color="black", zorder=1, alpha=0.1)
+                [source[1], sink[1]], color="black", zorder=1, alpha=0.4)
 
     if draw_graph:
         plt.title('Multidimensional scaling')

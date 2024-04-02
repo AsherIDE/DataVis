@@ -58,19 +58,19 @@ networks = {'Simple': Network(['LesMiserables', 'LeagueNetwork'],
                               {}), 
             'Tree': Network(['LesMiserables', 'JazzNetwork'],
                             ['Breadth-first search', 'Depth-first search'],
-                            {'edge drawing':['All edges', 'Only tree edges']}), 
+                            {'edge drawing':['All edges', 'Only tree edges'], 'root node':['1', '7', '11', '52', '71']}), 
             'Force-directed': Network(['LesMiserables', 'JazzNetwork', 'SmallDirectedNetwork', 'LeagueNetwork'],
                                       [],
-                                      {}), 
+                                      {'iteration':['50', '100', '200', '500']}), 
             'Layered': Network(['LesMiserables', 'SmallDirectedNetwork', 'LeagueNetwork'],
-                               [],
-                               {}), 
+                               ['Median', 'Barycenter'],
+                               {'dummy':['Dummy edges', 'Only direct edges']}), 
             'Clustered': Network(['ArgumentationNetwork'],
                                  [],
                                  {}), 
             'Projections': Network(['LesMiserables', 'JazzNetwork', 'LeagueNetwork'],
                                    ['Multidimensional scaling', 't-distributed stochastic neighbor embedding'],
-                                   {}), 
+                                   {'perplexity':['5', '10', '15', '20']}), 
             'Quality-measurement': Network(['LesMiserables', 'SmallDirectedNetwork', 'LeagueNetwork'],
                                          ['Multidimensional scaling', 'Layered network'],
                                          {})} # + network
@@ -192,10 +192,65 @@ def display_settings(settings_dict):
 def display_specific_settings(settings_dict):
     network = networks[settings_dict['name']]
 
+    # draw vis straight away if there are not settings
     if len(network.settings) == 0:
         draw_visualization(settings_dict)
     else:
         print("TODO: get settings working")
+
+        # add settings to settingsdict
+        if 'settings' not in settings_dict:
+            settings_dict['settings'] = {}
+
+        # check if all settings have been iterated
+        if len(settings_dict['settings']) == len(network.settings):
+            print(settings_dict)
+            draw_visualization(settings_dict)
+
+        else:
+            choice = '' 
+
+            display_title()
+
+            # print settings that were provided previously
+            display_selected_settings(settings_dict)
+
+            for setting, options in network.settings.items():
+
+                # check which setting needs input
+                if setting not in settings_dict['settings']:
+                    # print the actual options
+                    print(f"\nChoose {setting} options:")
+
+                    for i, option in enumerate(options):
+                        print(f" - [{i + 1}] {option}")
+
+                    print(" - [b] Back")
+                    print(" - [q] Quit")
+
+
+                    # get input
+                    choice = input("\n > ")
+
+                    # handle input
+                    if choice.isdigit() and int(choice) <= len(options) and int(choice) > 0:
+                        choice_setting = options[int(choice) - 1]
+
+                        settings_dict['settings'][setting] = choice_setting
+                        display_specific_settings(settings_dict)
+
+                    elif choice == "b":
+                        display_settings(settings_dict)
+                    elif choice == "q":
+                        return
+                    else:
+                        display_specific_settings(settings_dict)
+
+                    break
+
+
+
+        
 
 
 
@@ -212,24 +267,41 @@ def draw_visualization(settings_dict):
         else:
             drawRandom(settings_dict['file'])
 
-    # TODO: start_node setting
+    
     elif settings_dict['name'] == 'Tree':
+        # {'edge drawing':['All edges', 'Only tree edges'], 'root node':['1', '11', '52', '71']}
         fontsize, nodesize, xy = 5, 30, (110, -1.4)
         if settings_dict['file'] == 'LesMiserables':
             fontsize, nodesize, xy = 6, 100, (4, -0.9)
 
+        draw_all_edges = False
+        if settings_dict['settings']['edge drawing'] == 'All edges':
+            draw_all_edges = True
+
         if settings_dict['algorithm'] == 'Breadth-first search':
-            drawTree(settings_dict['file'], fontsize, nodesize, xy, draw_all_edges=False)
+            drawTree(settings_dict['file'], fontsize, nodesize, xy, draw_all_edges=draw_all_edges)
         else:
-            drawTree(settings_dict['file'], fontsize, nodesize, xy, draw_all_edges=False, MODE='dfs', START_NODE= '1')
+            root_node = settings_dict['settings']['root node']
 
-    # TODO: iterations setting
+            drawTree(settings_dict['file'], fontsize, nodesize, xy, draw_all_edges=draw_all_edges, MODE='dfs', START_NODE=root_node)
+
+
     elif settings_dict['name'] == 'Force-directed':
-        drawForceDirected(settings_dict['file'])
+        sims = int(settings_dict['settings']['iteration'])
 
-    # TODO: medion or barycenter setting, dummies and no dummies (reverse edges)
+        drawForceDirected(settings_dict['file'], number_of_sims=sims)
+
+
     elif settings_dict['name'] == 'Layered':
-        drawLayered(settings_dict['file'])
+        median = True
+        if settings_dict['algorithm'] == 'Barycenter':
+            median = False
+
+        nodummies = True
+        if settings_dict['settings']['dummy'] == 'Dummy edges':
+            nodummies = False
+
+        drawLayered(settings_dict['file'], draw_graph=True, nodummies=nodummies, median=median)
         
     elif settings_dict['name'] == 'Clustered':
         drawClusters(settings_dict['file'])
@@ -238,7 +310,9 @@ def draw_visualization(settings_dict):
         if settings_dict['algorithm'] == 'Multidimensional scaling':
             drawMDS(settings_dict['file'])
         else:
-            drawtSNE(settings_dict['file'])
+            perplexity = int(settings_dict['settings']['perplexity'])
+
+            drawtSNE(settings_dict['file'], perpl=perplexity)
 
     elif settings_dict['name'] == 'Quality-measurement':
         if settings_dict['algorithm'] == 'Multidimensional scaling':

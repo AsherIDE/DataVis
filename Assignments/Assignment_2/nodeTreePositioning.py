@@ -212,7 +212,7 @@ def drawTree(FILE_NAME, fontsize, circlesize, xy, draw_all_edges=False, MODE='bf
                     continue
                 
                 plt.plot([coords[node][0], coords[neighbor[0]][0]],
-                        [coords[node][1], coords[neighbor[0]][1]], color='black', zorder=1, alpha=0.4)
+                        [coords[node][1], coords[neighbor[0]][1]], color='violet', zorder=1, alpha=0.3)
 
     plt.title('Tree Visualization')
     # plt.xlabel('X')

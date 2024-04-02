@@ -4,12 +4,11 @@ import matplotlib.pyplot as plt
 from floyd_warshall import floyd_warshall
 from sklearn.manifold import TSNE
 
-def drawtSNE(FILE_NAME):
+def drawtSNE(FILE_NAME, perpl=5):
     FILE_NAME = f'Networks/{FILE_NAME}.dot'
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
     X = floyd_warshall(G)
-    perpl = 5
 
     embedding = TSNE(n_components=2, perplexity = perpl)
 
@@ -34,7 +33,7 @@ def drawtSNE(FILE_NAME):
 
     for i in range(len(X_transformed)):
         x,y = X_transformed[i]
-        plt.scatter(x, y, color="#EECA3B", zorder=2, s=50)
+        plt.scatter(x, y, color="red", zorder=2, s=50)
         plt.text(x, y, i+1, fontsize=5, ha='center', va='center', zorder=3, color='black')
 
     # draw edges
@@ -42,7 +41,7 @@ def drawtSNE(FILE_NAME):
         source, sink = X_transformed[int(edge.get_source()) - 1], X_transformed[int(edge.get_destination()) - 1]
 
         plt.plot([source[0], sink[0]],
-                [source[1], sink[1]], color="black", zorder=1, alpha=0.1)
+                [source[1], sink[1]], color="black", zorder=1, alpha=0.4)
 
     plt.title('t-SNE, perplexity = ' + str(perpl))
     plt.xticks([])
