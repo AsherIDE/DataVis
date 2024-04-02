@@ -82,6 +82,9 @@ def bfs_start_finder(visited, graph, total_nodes_amount, node):
 
 # find suitable bfs starting nodes
 def getStartNode(adjacency_list, total_nodes):
+  visited = []
+  queue = [] 
+  
   suitable_nodes = []
   for node in total_nodes:
     potential_node = bfs_start_finder(visited, adjacency_list, total_nodes, node)
