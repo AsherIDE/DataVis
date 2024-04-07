@@ -1,9 +1,3 @@
-"""
-TODO's
-- Write README file
-- Look at feedback from assignment 3 and onwards
-"""
-
 # libs
 import os
 
