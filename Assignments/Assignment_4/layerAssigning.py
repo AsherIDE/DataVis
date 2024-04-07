@@ -1,6 +1,6 @@
 import pydot
 
-from Assignments.Assignment_4.removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
+from removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
 
 # Creates a layer assignment from an acyclic adjacency list
 def CreateLayerAssignment(input, all_nodes):

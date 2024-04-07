@@ -1,8 +1,8 @@
 import pydot
 import statistics
 import matplotlib.pyplot as plt
-from Assignments.Assignment_4.removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
-from Assignments.Assignment_4.layerAssigning import CreateLayerAssignment
+from removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
+from layerAssigning import CreateLayerAssignment
 from shapely import LineString
 import math
 from floyd_warshall import floyd_warshall
@@ -148,6 +148,8 @@ def reduce_crossings_barycenter(result, layer_list, connections_list):
     
     return layer_list, crossing_number_list
 
+# MEDIAN 
+
 def reduce_crossings_median(result, layer_list, connections_list):
     
     crossing_number = count_crossings(layer_list, connections_list)
@@ -230,7 +232,7 @@ def reverse_edges_no_dummies(connections_list, reversed_edges):
 
 
 
-def plot_final_graph(result, layer_list, connections_list, draw_graph=True):
+def plot_final_graph(result, layer_list, connections_list, dummy_variables, draw_graph=True):
 
     coords = {}
     edge_coords = []
@@ -245,22 +247,28 @@ def plot_final_graph(result, layer_list, connections_list, draw_graph=True):
                 plt.plot(c, l, 's', color = 'white', zorder = 0)
                 #plt.text(c+0.01, l, i, zorder = 3)
             else:
-                plt.scatter(c, l, color = 'purple', zorder = 2)
-                plt.text(c+0.01, l, i, zorder = 3)
+                plt.scatter(c, l, color = 'red', zorder = 2)
+                #plt.text(c+0.01, l, i, zorder = 3)
             coords[i] = [c,l]
             d +=1
-
-    for i in connections_list:
-        if (i[1].startswith('d') and i[0].startswith('d')) or (i[0].startswith('d')):
-            continue
-        elif i[1].startswith('d'):
-            plt.annotate('', xy = coords[i[1][1:].split('.')[0]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='violet'), zorder = 1, alpha = 0.7)
-        else:
-            edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
+    if dummy_variables:
+        for i in connections_list:
             if len(i) == 2:
-                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="-", color='violet'), zorder = 1, alpha = 0.7)
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
             else:
-                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="-", color='green'), zorder = 1, alpha = 0.9)
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.7), zorder = 1)
+    else: 
+        for i in connections_list:
+            if (i[1].startswith('d') and i[0].startswith('d')) or (i[0].startswith('d')):
+               continue
+            elif i[1].startswith('d'):
+               plt.annotate('', xy = coords[i[1][1:].split('.')[0]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
+            else:
+                edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
+                if len(i) == 2:
+                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
+                else:
+                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.7), zorder = 1)
 
     for i in list(result.keys()):
         plt.axhline(y = i, color = 'black', linestyle = '-', linewidth = 0.3, zorder = 0) 
@@ -275,7 +283,7 @@ def plot_final_graph(result, layer_list, connections_list, draw_graph=True):
         plt.clf()
     return edge_coords, coords
 
-def drawLayered(FILE_NAME, draw_graph=True, nodummies=True, median=True):
+def drawLayered(FILE_NAME, draw_graph=True, nodummies=False, median=False):
     if draw_graph:
         FILE_NAME = f'Networks/{FILE_NAME}.dot'
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
@@ -301,96 +309,97 @@ def drawLayered(FILE_NAME, draw_graph=True, nodummies=True, median=True):
         connections_list_new = reverse_edges(connections_list, reversed_edges)
     
     coords, node_coords = plot_final_graph(result, new_layer_list, connections_list_new, draw_graph)
+    print(crossing_list)
 
-    return coords, node_coords, new_layer_list
+    return coords, node_coords#, new_layer_list
 
 ### ---- QUALITY METRICS ---- ###
 
 
-def calculate_angle(edge1, edge2, layer_count):
-    e1_new = [(edge1[0][0]-edge1[1][0]), (edge1[0][1]/layer_count-edge1[1][1]/layer_count)]
-    e2_new = [(edge2[0][0]-edge2[1][0]), (edge2[0][1]/layer_count-edge2[1][1]/layer_count)]
-    dot_product = (e1_new[0]*e2_new[0]) + (e1_new[1]*e2_new[1])
-    len_e1 = ((e1_new[0]*e1_new[0]) + (e1_new[1]*e1_new[1]))**0.5
-    len_e2 = ((e2_new[0]*e2_new[0]) + (e2_new[1]*e2_new[1]))**0.5
-    cos_angle = dot_product/(len_e1*len_e2)
-    angle = math.acos(cos_angle)
-    angle_deg = math.degrees(angle)
-    return angle_deg
+# def calculate_angle(edge1, edge2, layer_count):
+#     e1_new = [(edge1[0][0]-edge1[1][0]), (edge1[0][1]/layer_count-edge1[1][1]/layer_count)]
+#     e2_new = [(edge2[0][0]-edge2[1][0]), (edge2[0][1]/layer_count-edge2[1][1]/layer_count)]
+#     dot_product = (e1_new[0]*e2_new[0]) + (e1_new[1]*e2_new[1])
+#     len_e1 = ((e1_new[0]*e1_new[0]) + (e1_new[1]*e1_new[1]))**0.5
+#     len_e2 = ((e2_new[0]*e2_new[0]) + (e2_new[1]*e2_new[1]))**0.5
+#     cos_angle = dot_product/(len_e1*len_e2)
+#     angle = math.acos(cos_angle)
+#     angle_deg = math.degrees(angle)
+#     return angle_deg
 
-def drawLayeredQuality(FILE_NAME):
-    FILE_NAME = f'Networks/{FILE_NAME}.dot'
+# def drawLayeredQuality(FILE_NAME):
+#     FILE_NAME = f'Networks/{FILE_NAME}.dot'
 
-    G = pydot.graph_from_dot_file(FILE_NAME)[0]
+#     G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-    # drawleyered part
-    # ---------------------------------------------------------------------------------------------
-    coords, node_coords, new_layer_list = drawLayered(FILE_NAME, draw_graph=False)
-    # ---------------------------------------------------------------------------------------------
+#     # drawleyered part
+#     # ---------------------------------------------------------------------------------------------
+#     coords, node_coords, new_layer_list = drawLayered(FILE_NAME, draw_graph=False)
+#     # ---------------------------------------------------------------------------------------------
 
-    X = floyd_warshall(G)
+#     X = floyd_warshall(G)
 
-    coords_list = []
-    smallest_angle = 360
-    crossing_count = 0
-    pairs_list = []
-    data_dist_list = []
-    graph_dist_list = []
-    stress = 0 
-    normalization = 0
+#     coords_list = []
+#     smallest_angle = 360
+#     crossing_count = 0
+#     pairs_list = []
+#     data_dist_list = []
+#     graph_dist_list = []
+#     stress = 0 
+#     normalization = 0
 
 
-    # calculate number of crossings and smallest angle
-    for edge in coords:
-        current_coord = edge
+#     # calculate number of crossings and smallest angle
+#     for edge in coords:
+#         current_coord = edge
 
-        for coord in coords_list: 
+#         for coord in coords_list: 
 
-            if LineString(current_coord).crosses(LineString(coord)):
-                crossing_count += 1
-                angle = calculate_angle(current_coord, coord, len(new_layer_list))
+#             if LineString(current_coord).crosses(LineString(coord)):
+#                 crossing_count += 1
+#                 angle = calculate_angle(current_coord, coord, len(new_layer_list))
             
-                if angle < smallest_angle:
-                    smallest_angle = angle
-                    print(angle)
+#                 if angle < smallest_angle:
+#                     smallest_angle = angle
+#                     print(angle)
             
-        coords_list += [current_coord]
+#         coords_list += [current_coord]
 
 
-    # calculate stress
-    for i in range(1, 78):
-        pairs_list.append(node_coords[str(i)])
+#     # calculate stress
+#     for i in range(1, 78):
+#         pairs_list.append(node_coords[str(i)])
 
 
-    for i in range(len(pairs_list)):
-        for j in range(i+1, len(pairs_list)):
-            [x1, y1] = pairs_list[i]
-            [x2, y2] = pairs_list[j]
-            data_distance = X[i][j]
-            graph_distance = math.dist([x1, y1], [x2, y2])
-            data_dist_list.append(data_distance)
-            graph_dist_list.append(graph_distance)
-            stress += (data_distance - graph_distance)**2
-            normalization += data_distance**2
+#     for i in range(len(pairs_list)):
+#         for j in range(i+1, len(pairs_list)):
+#             [x1, y1] = pairs_list[i]
+#             [x2, y2] = pairs_list[j]
+#             data_distance = X[i][j]
+#             graph_distance = math.dist([x1, y1], [x2, y2])
+#             data_dist_list.append(data_distance)
+#             graph_dist_list.append(graph_distance)
+#             stress += (data_distance - graph_distance)**2
+#             normalization += data_distance**2
         
 
-    # plot shepard
-    plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
-    plt.show()
-    spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
+#     # plot shepard
+#     plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
+#     plt.show()
+#     spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
 
-    # normalized stress
-    norm_stress = stress/normalization
+#     # normalized stress
+#     norm_stress = stress/normalization
 
-    # results
-    print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
+#     # results
+#     print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
 
 # TEST
-# FILE_NAME = 'SmallDirectedNetwork'
+FILE_NAME = 'SmallDirectedNetwork'
 # FILE_NAME = 'LeagueNetwork'
 # FILE_NAME = 'LesMiserables'
 
-# drawLayered(FILE_NAME) 
+drawLayered(FILE_NAME) 
 # drawLayeredQuality(FILE_NAME)
 
 
