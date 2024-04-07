@@ -14,7 +14,7 @@ G = pydot.graph_from_dot_file(FILE_NAME)[0]
 X = floyd_warshall(G)
 perpl = 5
 
-embedding = TSNE(n_components=2, perplexity = perpl)
+embedding = TSNE(n_components=2, perplexity = perpl, metric = 'precomputed', init = 'random')
 
 X_transformed = embedding.fit_transform(X)
 

@@ -245,28 +245,28 @@ def plot_final_graph(result, layer_list, connections_list, dummy_variables):
                 plt.plot(c, l, 's', color = 'white', zorder = 0)
                 #plt.text(c+0.01, l, i, zorder = 3)
             else:
-                plt.scatter(c, l, color = 'purple', zorder = 2)
-                plt.text(c+0.01, l, i, zorder = 3)
+                plt.scatter(c, l, color = 'red', zorder = 2)
+                #plt.text(c+0.01, l, i, zorder = 3)
             coords[i] = [c,l]
             d +=1
     if dummy_variables:
         for i in connections_list:
             if len(i) == 2:
-                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='violet'), zorder = 1, alpha = 0.7)
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.4), zorder = 1)
             else:
-                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='green'), zorder = 1, alpha = 0.9)
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.4), zorder = 1)
     else: 
         for i in connections_list:
             if (i[1].startswith('d') and i[0].startswith('d')) or (i[0].startswith('d')):
                continue
             elif i[1].startswith('d'):
-               plt.annotate('', xy = coords[i[1][1:].split('.')[0]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='violet'), zorder = 1, alpha = 0.7)
+               plt.annotate('', xy = coords[i[1][1:].split('.')[0]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.4), zorder = 1)
             else:
                 edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
                 if len(i) == 2:
-                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='violet'), zorder = 1, alpha = 0.7)
+                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.4), zorder = 1)
                 else:
-                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='green'), zorder = 1, alpha = 0.9)
+                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.4), zorder = 1)
 
 
 
@@ -287,18 +287,18 @@ def plot_final_graph(result, layer_list, connections_list, dummy_variables):
 # FILE_NAME = 'Networks/SmallDirectedNetwork.dot'
 # G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
-FILE_NAME = 'Networks/LeagueNetwork.dot'
-G = pydot.graph_from_dot_file(FILE_NAME)[0]
-
-# FILE_NAME = 'Networks/LesMiserables.dot'
+# FILE_NAME = 'Networks/LeagueNetwork.dot'
 # G = pydot.graph_from_dot_file(FILE_NAME)[0]
+
+FILE_NAME = 'Networks/LesMiserables.dot'
+G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
 adj_test_list = CreateDirectedAdjacencyList(G.get_edge_list())
 total_nodes = [node.get_name() for node in G.get_node_list()]
 acyclic_adj_test_list, reversed_edges = CreateDirectedAcyclicAdjacencyList(adj_test_list)
 result = CreateLayerAssignment(acyclic_adj_test_list, total_nodes)
 
-dummy_variables = True # change to False if you don't want to include dummies in the graph
+dummy_variables = False # change to False if you don't want to include dummy positions in the graph
 
 connections_list, coords = create_dummies_and_lists(result)
 layer_list = create_layer_list(result)
