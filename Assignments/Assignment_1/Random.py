@@ -7,21 +7,21 @@ import numpy as np
 def plot_graph(ax:plt.Axes, coords_list:dict, adjacency_list:dict, node_positions):
     for node, position in coords_list.items():
         ax.scatter(position[0], position[1], color='red', zorder=2, s=130)
-        ax.text(position[0], position[1]-0.04, node, c='black', fontsize=8, ha='center', va='bottom')
+        ax.text(position[0], position[1], node, c='black', fontsize=8, ha='center', va='center', zorder=3)
 
     # Draw edges
     for node, neighbors in adjacency_list.items():
         for neighbor in neighbors:
 
             ax.plot([node_positions[node][0], node_positions[neighbor[0]][0]],
-                    [node_positions[node][1], node_positions[neighbor[0]][1]], color='black', zorder=1)
-    ax.set_title('Graph Visualization')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
+                    [node_positions[node][1], node_positions[neighbor[0]][1]], color='black', zorder=1, alpha=0.4)
+    ax.set_title('Simple random visualization')
+    # ax.set_xlabel('X')
+    # ax.set_ylabel('Y')
     # ax.set_xlim(0, 1)
     # ax.set_ylim(0, 1)
-    # ax.set_xticks([])
-    # ax.set_yticks([])
+    ax.set_xticks([])
+    ax.set_yticks([])
     return None
 
 def return_gravity_force(coord:np.ndarray, mass, grav_coeff):
