@@ -1,12 +1,47 @@
 import matplotlib.pyplot as plt
 import pydot
 import numpy as np
-from quadtree_3rd_party import Point, Rect, QuadTree
 import json
 from shapely import LineString
 import math
 from floyd_warshall import floyd_warshall
 from scipy import stats
+
+class Point:
+    """A point located at (x,y) in 2D space.
+    """
+
+    def __init__(self, x, y, payload=None):
+        self.x, self.y = x, y
+        self.payload = payload
+
+    def __repr__(self):
+        return "{}: {}".format(str((self.x, self.y)), repr(self.payload))
+
+    def __str__(self):
+        return "P({:.2f}, {:.2f})".format(self.x, self.y)
+
+    def distance_to(self, other):
+        try:
+            other_x, other_y = other.x, other.y
+        except AttributeError:
+            other_x, other_y = other
+        return np.hypot(self.x - other_x, self.y - other_y)
+    
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+    
+    def __truediv__(self, other: float):
+        return Point(self.x / other, self.y / other, self.payload)
+    
+    def __mul__(self, other:float|int):
+        return Point(self.x * other, self.y * other, self.payload)
+    
+    def __rmul__(self, other:float|int):
+        return self * other
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
 
 class Node:
 
@@ -187,21 +222,7 @@ def init_sim(G: pydot.Dot, init_mode="stoch") -> tuple[dict[str:Node], list]:
         nodes_dict[dest].add_adjacent(source, attr)
 
     for name, node in nodes_dict.items():
-        node.calc_own_weight()
-
-    x_poss = np.array([node.pos.x for name, node in nodes_dict.items()])
-    y_poss = np.array([node.pos.y for name, node in nodes_dict.items()])
-
-    area_width, area_height = np.max(x_poss) - np.min(x_poss), np.max(y_poss) - np.min(y_poss)
-    tree_size = max(area_height, area_width) 
-    tree_cent = np.array([np.mean(x_poss), np.mean(y_poss)])
-    
-    quad_domain = Rect(tree_cent[0], tree_cent[1], tree_size, tree_size)
-    points = [node.pos for name, node in nodes_dict.items()]
-    qtree = QuadTree(quad_domain, 4)
-    for point in points:
-        qtree.insert(point)
-        
+        node.calc_own_weight()    
 
     return nodes_dict, edge_list
 
@@ -221,7 +242,7 @@ if __name__ == "__main__":
     FILE_NAME = "Networks/LesMiserables.dot"
 
     DELTA_TIME = False
-    MODE = "FR"  # Out of SP (Spring-Embedder), FR (Fruchterman and Reingold)
+    MODE = "FR"  # Out of SE (Spring-Embedder), FR (Fruchterman and Reingold)
     INERTIA = True
     GRAVITY = True
 
