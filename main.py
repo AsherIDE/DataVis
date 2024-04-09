@@ -1,9 +1,3 @@
-"""
-TODO's
-- Write README file
-- Look at feedback from assignment 3 and onwards
-"""
-
 # libs
 import os
 
@@ -80,7 +74,7 @@ def display_visualizations():
     print("What kind of visualization would you like to create?")
     for i, network in enumerate(networks.keys()):
 
-        print(f" - [{i + 1}] {network} network")
+        print(f" - [{i + 1}] {network} graph")
     print(" - [q] Quit")
 
     # handle input
@@ -101,7 +95,7 @@ def display_selected_settings(settings_dict):
                 for setting_name, setting in settings_dict.items():
                     
                     if setting_name == 'name':
-                        print(f"Picked {setting} network visualization settings:")
+                        print(f"Picked {setting} graph visualization settings:")
                     elif setting_name == 'settings':
 
                         if len(settings_dict['settings']) > 0:
@@ -195,7 +189,6 @@ def display_specific_settings(settings_dict):
     if len(network.settings) == 0:
         draw_visualization(settings_dict)
     else:
-        print("TODO: get settings working")
 
         # add settings to settingsdict
         if 'settings' not in settings_dict:

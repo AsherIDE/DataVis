@@ -10,7 +10,7 @@ def drawtSNE(FILE_NAME, perpl=5):
 
     X = floyd_warshall(G)
 
-    embedding = TSNE(n_components=2, perplexity = perpl)
+    embedding = TSNE(n_components=2, perplexity = perpl, metric='precomputed', init='random')
 
     X_transformed = embedding.fit_transform(X)
 
