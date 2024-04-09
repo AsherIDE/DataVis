@@ -104,7 +104,7 @@ def plot_graph(nodes_dict: dict[str, Node], edge_list, ax, force_plot):
 
 def spring_embed_repulse(node1: Point, node2: Point, c_rep: float):
     point_vec = node1 - node2
-    point_dist = np.linalg.norm(point_vec)
+    point_dist = node1.distance_to(node2)
 
     f_rep = c_rep / (point_dist * point_dist) * (point_vec / point_dist)
     return f_rep
@@ -157,12 +157,12 @@ def update_sim(
             if name_2 == name:
                 continue
             if MODE == "SE":
-                if name_2 not in node.adjacent_nodes:
-                    total_force = total_force + spring_embed_repulse(
-                        node_dict[name].pos, node_dict[name_2].pos, c_rep
-                    )
-                elif name_2 in node.adjacent_nodes:
-                    total_force = total_force + spring_embed_spring(
+                # if name_2 not in node.adjacent_nodes:
+                total_force = total_force + spring_embed_repulse(
+                    node_dict[name].pos, node_dict[name_2].pos, c_rep
+                )
+                if name_2 in node.adjacent_nodes:
+                    total_force += total_force + spring_embed_spring(
                         node_dict[name].pos, node_dict[name_2].pos, c_spring, length
                     )
             elif MODE == "FR":
@@ -232,7 +232,7 @@ def export_node_positions(nodes_dict: dict[str, Node]):
 
 
 # if __name__ == "__main__":
-MODE = "FR"  # Out of SP (Spring-Embedder), FR (Fruchterman and Reingold)
+MODE = "FR"  # Out of SE (Spring-Embedder), FR (Fruchterman and Reingold)
 INERTIA = True
 GRAVITY = True
 
@@ -241,7 +241,11 @@ def drawForceDirected(FILE_NAME, number_of_sims=5000):
 
     DELTA_TIME = False
 
-    DT = 0.01
+    match MODE:
+        case "FR":
+            DT = 0.01
+        case "SE":
+            DT = 1
 
     print("Reading file...")
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
