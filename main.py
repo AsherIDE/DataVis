@@ -11,6 +11,7 @@ from Assignments.Assignment_1.Circle import drawCircle
 from Assignments.Assignment_2.nodeTreePositioning import drawTree
 
 from Assignments.Assignment_3.ForceDirectedLayout import drawForceDirected
+from ForceDirectedLayout import drawForceDirectedQuality
 
 from Assignments.Assignment_4.crossing_reduction import drawLayered, drawLayeredQuality
 
@@ -43,7 +44,7 @@ networks = {'Simple': Network(['LesMiserables', 'LeagueNetwork'],
                             ['Breadth-first search', 'Depth-first search'],
                             {'edge drawing':['All edges', 'Only tree edges'], 'root node':['1', '7', '11', '52', '71']}), 
             'Force-directed': Network(['LesMiserables', 'JazzNetwork', 'SmallDirectedNetwork', 'LeagueNetwork'],
-                                      [],
+                                      ['Spring-Embedder', 'Fruchterman and Reingold'],
                                       {'iteration':['50', '100', '200', '500', '1000']}), 
             'Layered': Network(['LesMiserables', 'SmallDirectedNetwork', 'LeagueNetwork', 'JazzNetwork'],
                                ['Median', 'Barycenter'],
@@ -55,7 +56,7 @@ networks = {'Simple': Network(['LesMiserables', 'LeagueNetwork'],
                                    ['Multidimensional scaling', 't-distributed stochastic neighbor embedding'],
                                    {'perplexity':['5', '10', '15', '20']}), 
             'Quality-measurement': Network(['LesMiserables', 'JazzNetwork', 'LeagueNetwork'],
-                                         ['Multidimensional scaling', 'Layered network'],
+                                         ['Force-directed', 'Layered', 'Multidimensional scaling'],
                                          {})} # + network
 
 def display_title():
@@ -286,8 +287,12 @@ def draw_visualization(settings_dict):
 
     elif settings_dict['name'] == 'Force-directed':
         sims = int(settings_dict['settings']['iteration'])
+        algorithm = 'FR'
 
-        drawForceDirected(settings_dict['file'], number_of_sims=sims)
+        if settings_dict['algorithm'] == 'Spring-Embedder':
+            algorithm = 'SE'
+
+        drawForceDirected(settings_dict['file'], number_of_sims=sims, MODE=algorithm)
 
 
     elif settings_dict['name'] == 'Layered':
@@ -315,6 +320,8 @@ def draw_visualization(settings_dict):
     elif settings_dict['name'] == 'Quality-measurement':
         if settings_dict['algorithm'] == 'Multidimensional scaling':
             drawMDSQuality(settings_dict['file'])
+        elif settings_dict['algorithm'] == 'Force-directed':
+            drawForceDirectedQuality(settings_dict['file'])
         else:
             drawLayeredQuality(settings_dict['file'])
 

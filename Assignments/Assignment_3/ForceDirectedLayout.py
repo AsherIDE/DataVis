@@ -144,6 +144,7 @@ def update_sim(
     c_FP: float = 1,
     c_grav: float = 1,
     delta: float = 1,
+    MODE='FR'
 ):
     total_total_force = 0
     poss = np.array([[node.pos.x, node.pos.y] for name, node in node_dict.items()])
@@ -232,11 +233,11 @@ def export_node_positions(nodes_dict: dict[str, Node]):
 
 
 # if __name__ == "__main__":
-MODE = "FR"  # Out of SE (Spring-Embedder), FR (Fruchterman and Reingold)
+# MODE = "FR"  # Out of SE (Spring-Embedder), FR (Fruchterman and Reingold)
 INERTIA = True
 GRAVITY = True
 
-def drawForceDirected(FILE_NAME, number_of_sims=5000):
+def drawForceDirected(FILE_NAME, number_of_sims=5000, MODE='FR'):
     FILE_NAME = f'Networks/{FILE_NAME}.dot'
 
     DELTA_TIME = False
@@ -263,7 +264,7 @@ def drawForceDirected(FILE_NAME, number_of_sims=5000):
         #     fig.savefig("Assignments/Assignment 3/StartPosition.png")
         
         node_positions, tot_force = update_sim(
-            nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta
+            nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta, MODE=MODE
         )
         tot_force_plot.append(tot_force / len(nodes_dict))
         ax[0].cla()

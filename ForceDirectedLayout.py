@@ -234,55 +234,12 @@ def export_node_positions(nodes_dict: dict[str, Node]):
         json.dump(export_dict, fp, indent=3)
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    # FILE_NAME = "Networks/JazzNetwork.dot"
-    FILE_NAME = 'Networks/LeagueNetwork.dot'
-    # FILE_NAME = "Networks/SmallDirectedNetwork.dot"
-    #FILE_NAME = "Networks/LesMiserables.dot"
-
-    DELTA_TIME = False
-    MODE = "FR"  # Out of SE (Spring-Embedder), FR (Fruchterman and Reingold)
-    INERTIA = True
-    GRAVITY = True
-
-    DT = 0.01
-
-    print("Reading file...")
-    G = pydot.graph_from_dot_file(FILE_NAME)[0]
-
-    nodes_dict, edges_list = init_sim(G, init_mode="stoch")
-
-    number_of_sims = 5000
-
-    fig, ax = plt.subplots(1, 2, figsize=(10, 6))
-    tot_force_plot = []
-
-    for i in range(number_of_sims):
-        delta_t = 1 / (i * i * i + 100) + 0.001
-        delta = [DT, delta_t][DELTA_TIME]
-        
-        if i == 0:
-            fig.savefig("Assignments/Assignment_3/StartPosition.png")
-        
-        node_positions, tot_force = update_sim(
-            nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta
-        )
-        tot_force_plot.append(tot_force / len(nodes_dict))
-        ax[0].cla()
-        ax[1].cla()
-        plot_graph(nodes_dict, edges_list, ax, tot_force_plot)
-        export_node_positions(nodes_dict)
-        fig.tight_layout()
-        plt.pause(0.01)
-        if i % 50 == 0:
-            fig.savefig(f"Assignments/Assignment_3/Iteration{i}.png")
-        if tot_force / len(nodes_dict) < .42:
-            fig.savefig(f"Assignments/Assignment_3/FinalPosition.png")
-            break
-
-    plt.show()
-
+DELTA_TIME = False
+MODE = "FR"  # Out of SE (Spring-Embedder), FR (Fruchterman and Reingold)
+INERTIA = True
+GRAVITY = True
 
 ### ---- QUALITY METRICS ---- ###
     
@@ -297,64 +254,107 @@ def calculate_angle(edge1, edge2):
     angle_deg = math.degrees(angle)
     return angle_deg
 
-# starting values
-coords_list = []
-crossing_count = 0
-smallest_angle = 360
-X = floyd_warshall(G)
-pair_list = []
-data_dist_list = []
-graph_dist_list = []
-stress = 0 
-normalization = 0
+def drawForceDirectedQuality(FILE_NAME, number_of_sims=50):
+    FILE_NAME = f'Networks/{FILE_NAME}.dot'
 
-# calculate crossing count and smallest angle 
+    DT = 0.01
 
-for edge in edges_list:
-        source_pos = nodes_dict[edge.get_source()].pos
-        dest_pos = nodes_dict[edge.get_destination()].pos
-        current_coord = [(source_pos.x, source_pos.y), (dest_pos.x, dest_pos.y)]
-        for coord in coords_list: 
-            if LineString(current_coord).crosses(LineString(coord)):
-               crossing_count += 1
-               angle = calculate_angle(current_coord, coord)
-               
-               if angle < smallest_angle:
-                    smallest_angle = angle
-        coords_list += [current_coord]
+    print("Reading file...")
+    G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
+    nodes_dict, edges_list = init_sim(G, init_mode="stoch")
 
-# calculate stress of layout
-for i in range(1,len(nodes_dict)+1):
-    x = nodes_dict[str(i)].pos.x
-    y = nodes_dict[str(i)].pos.y
-    pair_list.append([x, y])
+    # fig, ax = plt.subplots(1, 2, figsize=(10, 6))
+    tot_force_plot = []
 
-for i in range(len(pair_list)):
-    for j in range(i+1, len(pair_list)):
-        [x1, y1] = pair_list[i]
-        [x2, y2] = pair_list[j]
-        data_distance = X[i][j]
-        graph_distance = math.dist([x1, y1], [x2, y2])
-        data_dist_list.append(data_distance)
-        graph_dist_list.append(graph_distance)
-        stress += (data_distance - graph_distance)**2
-        normalization += data_distance**2
-    
+    for i in range(number_of_sims):
+        delta_t = 1 / (i * i * i + 100) + 0.001
+        delta = [DT, delta_t][DELTA_TIME]
+        
+        # if i == 0:
+        #     fig.savefig("Assignments/Assignment_3/StartPosition.png")
+        
+        node_positions, tot_force = update_sim(
+            nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta
+        )
+        tot_force_plot.append(tot_force / len(nodes_dict))
+        # ax[0].cla()
+        # ax[1].cla()
+    #     plot_graph(nodes_dict, edges_list, ax, tot_force_plot)
+    #     export_node_positions(nodes_dict)
+    #     fig.tight_layout()
+    #     plt.pause(0.01)
+    #     if i % 50 == 0:
+    #         fig.savefig(f"Assignments/Assignment_3/Iteration{i}.png")
+    #     if tot_force / len(nodes_dict) < .42:
+    #         fig.savefig(f"Assignments/Assignment_3/FinalPosition.png")
+    #         break
+
+    # plt.show()
 
 
-# plot shepard
-plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
-plt.show()
-spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
+    # starting values
+    coords_list = []
+    crossing_count = 0
+    smallest_angle = 360
+    X = floyd_warshall(G)
+    pair_list = []
+    data_dist_list = []
+    graph_dist_list = []
+    stress = 0 
+    normalization = 0
 
-# calculate normalized stress
-norm_stress = stress/normalization
+    # calculate crossing count and smallest angle 
 
-# results
-print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
+    for edge in edges_list:
+            source_pos = nodes_dict[edge.get_source()].pos
+            dest_pos = nodes_dict[edge.get_destination()].pos
+            current_coord = [(source_pos.x, source_pos.y), (dest_pos.x, dest_pos.y)]
+            for coord in coords_list: 
+                if LineString(current_coord).crosses(LineString(coord)):
+                    crossing_count += 1
+                    angle = calculate_angle(current_coord, coord)
+                
+                    if angle < smallest_angle:
+                        smallest_angle = angle
+            coords_list += [current_coord]
 
 
+    # calculate stress of layout
+    for i in range(1,len(nodes_dict)+1):
+        x = nodes_dict[str(i)].pos.x
+        y = nodes_dict[str(i)].pos.y
+        pair_list.append([x, y])
+
+    for i in range(len(pair_list)):
+        for j in range(i+1, len(pair_list)):
+            [x1, y1] = pair_list[i]
+            [x2, y2] = pair_list[j]
+            data_distance = X[i][j]
+            graph_distance = math.dist([x1, y1], [x2, y2])
+            data_dist_list.append(data_distance)
+            graph_dist_list.append(graph_distance)
+            stress += (data_distance - graph_distance)**2
+            normalization += data_distance**2
+        
 
 
+    # plot shepard
+    plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
+    plt.show()
+    spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
 
+    # calculate normalized stress
+    norm_stress = stress/normalization
+
+    # results
+    print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
+
+
+# TEST
+# FILE_NAME = "JazzNetwork"
+# FILE_NAME = 'LeagueNetwork'
+# FILE_NAME = "SmallDirectedNetwork"
+# FILE_NAME = "LesMiserables"
+
+# drawForceDirectedQuality(FILE_NAME, 20)

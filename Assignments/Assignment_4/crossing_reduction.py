@@ -1,8 +1,8 @@
 import pydot
 import statistics
 import matplotlib.pyplot as plt
-from removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
-from layerAssigning import CreateLayerAssignment
+from Assignments.Assignment_4.removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
+from Assignments.Assignment_4.layerAssigning import CreateLayerAssignment
 from shapely import LineString
 import math
 from floyd_warshall import floyd_warshall
@@ -363,7 +363,7 @@ def drawLayeredQuality(FILE_NAME):
             
                 if angle < smallest_angle:
                     smallest_angle = angle
-                    print(angle)
+                    # print(angle)
             
         coords_list += [current_coord]
 
@@ -386,24 +386,24 @@ def drawLayeredQuality(FILE_NAME):
             stress += (data_distance - graph_distance)**2
             normalization += data_distance**2
         
-
-    # plot shepard
-    plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
-    plt.show()
+    # results
     spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
 
     # normalized stress
     norm_stress = stress/normalization
 
-    # results
     print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
+
+    # plot shepard
+    plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
+    plt.show()
 
 # TEST
 #FILE_NAME = 'SmallDirectedNetwork'
-FILE_NAME = 'LeagueNetwork'
+# FILE_NAME = 'LeagueNetwork'
 # FILE_NAME = 'LesMiserables'
 
 # drawLayered(FILE_NAME) 
-drawLayeredQuality(FILE_NAME)
+# drawLayeredQuality(FILE_NAME)
 
 

@@ -1,4 +1,4 @@
-from MDS import drawMDS
+from Assignments.Assignment_6.MDS import drawMDS
 import matplotlib.pyplot as plt
 from scipy import stats
 from shapely import LineString
@@ -60,20 +60,20 @@ def drawMDSQuality(FILE_NAME):
             normalization += data_distance**2
         
 
-
-    # plot shepard
-    plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
-    plt.show()
-    spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
-
     # normalized stress
+    spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
     norm_stress = stress/normalization
 
     # results
     print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
 
+    # plot shepard
+    plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
+    plt.show()
+    
+
 # TEST
 # FILE_NAME = 'LesMiserables' #Most suitable, other ones are bad
 # FILE_NAME = 'LeagueNetwork'
-FILE_NAME = 'JazzNetwork'
-drawMDSQuality(FILE_NAME)
+# FILE_NAME = 'JazzNetwork'
+# drawMDSQuality(FILE_NAME)
