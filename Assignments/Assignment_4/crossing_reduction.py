@@ -1,8 +1,8 @@
 import pydot
 import statistics
 import matplotlib.pyplot as plt
-from Assignments.Assignment_4.removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
-from Assignments.Assignment_4.layerAssigning import CreateLayerAssignment
+from removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
+from layerAssigning import CreateLayerAssignment
 from shapely import LineString
 import math
 from floyd_warshall import floyd_warshall
@@ -254,6 +254,7 @@ def plot_final_graph(result, layer_list, connections_list, dummy_variables, draw
     if not dummy_variables:
         for i in connections_list:
             if len(i) == 2:
+                edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
                 plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
             else:
                 plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.7), zorder = 1)
@@ -368,7 +369,9 @@ def drawLayeredQuality(FILE_NAME):
 
 
     # calculate stress
-    for i in range(1, 78):
+    node_count_list = [x for x in node_coords if not x.startswith('d')]
+
+    for i in range(1, len(node_count_list)+1):
         pairs_list.append(node_coords[str(i)])
 
 
@@ -396,11 +399,11 @@ def drawLayeredQuality(FILE_NAME):
     print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
 
 # TEST
-# FILE_NAME = 'SmallDirectedNetwork'
+FILE_NAME = 'SmallDirectedNetwork'
 # FILE_NAME = 'LeagueNetwork'
 # FILE_NAME = 'LesMiserables'
 
 # drawLayered(FILE_NAME) 
-# drawLayeredQuality(FILE_NAME)
+drawLayeredQuality(FILE_NAME)
 
 

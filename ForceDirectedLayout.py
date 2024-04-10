@@ -263,7 +263,7 @@ if __name__ == "__main__":
         delta = [DT, delta_t][DELTA_TIME]
         
         if i == 0:
-            fig.savefig("Assignments/Assignment 3/StartPosition.png")
+            fig.savefig("Assignments/Assignment_3/StartPosition.png")
         
         node_positions, tot_force = update_sim(
             nodes_dict, c_rep=1, c_spring=2, length=10, c_grav=0.0001, delta=delta
@@ -276,9 +276,9 @@ if __name__ == "__main__":
         fig.tight_layout()
         plt.pause(0.01)
         if i % 50 == 0:
-            fig.savefig(f"Assignments/Assignment 3/Iteration{i}.png")
+            fig.savefig(f"Assignments/Assignment_3/Iteration{i}.png")
         if tot_force / len(nodes_dict) < .42:
-            fig.savefig(f"Assignments/Assignment 3/FinalPosition.png")
+            fig.savefig(f"Assignments/Assignment_3/FinalPosition.png")
             break
 
     plt.show()
@@ -325,8 +325,7 @@ for edge in edges_list:
 
 
 # calculate stress of layout
-print("len: ", len(nodes_dict))
-for i in range(1,78):
+for i in range(1,len(nodes_dict+1)):
     x = nodes_dict[str(i)].pos.x
     y = nodes_dict[str(i)].pos.y
     pair_list.append([x, y])
