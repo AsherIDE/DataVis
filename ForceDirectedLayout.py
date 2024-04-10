@@ -237,9 +237,9 @@ def export_node_positions(nodes_dict: dict[str, Node]):
 if __name__ == "__main__":
 
     # FILE_NAME = "Networks/JazzNetwork.dot"
-    # FILE_NAME = 'Networks/LeagueNetwork.dot'
+    FILE_NAME = 'Networks/LeagueNetwork.dot'
     # FILE_NAME = "Networks/SmallDirectedNetwork.dot"
-    FILE_NAME = "Networks/LesMiserables.dot"
+    #FILE_NAME = "Networks/LesMiserables.dot"
 
     DELTA_TIME = False
     MODE = "FR"  # Out of SE (Spring-Embedder), FR (Fruchterman and Reingold)
@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
     nodes_dict, edges_list = init_sim(G, init_mode="stoch")
 
-    number_of_sims = 1
+    number_of_sims = 5000
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 6))
     tot_force_plot = []
@@ -325,7 +325,7 @@ for edge in edges_list:
 
 
 # calculate stress of layout
-for i in range(1,len(nodes_dict+1)):
+for i in range(1,len(nodes_dict)+1):
     x = nodes_dict[str(i)].pos.x
     y = nodes_dict[str(i)].pos.y
     pair_list.append([x, y])

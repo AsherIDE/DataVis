@@ -74,5 +74,6 @@ def drawMDSQuality(FILE_NAME):
 
 # TEST
 # FILE_NAME = 'LesMiserables' #Most suitable, other ones are bad
-
-drawMDSQuality('JazzNetwork')
+# FILE_NAME = 'LeagueNetwork'
+FILE_NAME = 'JazzNetwork'
+drawMDSQuality(FILE_NAME)

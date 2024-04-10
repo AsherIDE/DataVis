@@ -399,8 +399,8 @@ def drawLayeredQuality(FILE_NAME):
     print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
 
 # TEST
-FILE_NAME = 'SmallDirectedNetwork'
-# FILE_NAME = 'LeagueNetwork'
+#FILE_NAME = 'SmallDirectedNetwork'
+FILE_NAME = 'LeagueNetwork'
 # FILE_NAME = 'LesMiserables'
 
 # drawLayered(FILE_NAME) 
