@@ -1,8 +1,8 @@
 import pydot
 import statistics
 import matplotlib.pyplot as plt
-from removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
-from layerAssigning import CreateLayerAssignment
+from Assignments.Assignment_4.removeCycles import CreateDirectedAcyclicAdjacencyList, CreateDirectedAdjacencyList, flatten
+from Assignments.Assignment_4.layerAssigning import CreateLayerAssignment
 from shapely import LineString
 import math
 from floyd_warshall import floyd_warshall
@@ -232,7 +232,7 @@ def reverse_edges_no_dummies(connections_list, reversed_edges):
 
 
 
-def plot_final_graph(result, layer_list, connections_list, dummy_variables, draw_graph):
+def plot_final_graph(result, layer_list, connections_list, dummy_variables, draw_graph=True):
 
     coords = {}
     edge_coords = []
@@ -243,50 +243,50 @@ def plot_final_graph(result, layer_list, connections_list, dummy_variables, draw
         d = 0
         for i in current_layer:
             c = 0.5*b + d*b
-            # if i.startswith('d'):
-            #     plt.plot(c, l, 's', color = 'white', zorder = 0)
-            #     #plt.text(c+0.01, l, i, zorder = 3)
-            # else:
-            #     plt.scatter(c, l, color = 'red', zorder = 2)
-            #     #plt.text(c+0.01, l, i, zorder = 3)
+            if i.startswith('d'):
+                plt.plot(c, l, 's', color = 'white', zorder = 0)
+                #plt.text(c+0.01, l, i, zorder = 3)
+            else:
+                plt.scatter(c, l, color = 'red', zorder = 2)
+                #plt.text(c+0.01, l, i, zorder = 3)
             coords[i] = [c,l]
             d +=1
-    if dummy_variables:
+    if not dummy_variables:
         for i in connections_list:
-            edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
-    #         if len(i) == 2:
-    #             plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="-", color='black', alpha = 0.7), zorder = 1)
-    #         else:
-    #             plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="-", color='indigo', alpha = 0.7), zorder = 1)
-    # else: 
-    #     for i in connections_list:
-    #         if (i[1].startswith('d') and i[0].startswith('d')) or (i[0].startswith('d')):
-    #            continue
-    #         elif i[1].startswith('d'):
-    #            plt.annotate('', xy = coords[i[1][1:].split('.')[0]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
-    #         else:
-    #             edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
-    #             if len(i) == 2:
-    #                 plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
-    #             else:
-    #                 plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.7), zorder = 1)
+            if len(i) == 2:
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
+            else:
+                plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.7), zorder = 1)
+    else: 
+        for i in connections_list:
+            if (i[1].startswith('d') and i[0].startswith('d')) or (i[0].startswith('d')):
+               continue
+            elif i[1].startswith('d'):
+               plt.annotate('', xy = coords[i[1][1:].split('.')[0]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
+            else:
+                edge_coords.append([(coords[i[1]][0],coords[i[1]][1]), (coords[i[0]][0], coords[i[0]][1])])
+                if len(i) == 2:
+                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='black', alpha = 0.7), zorder = 1)
+                else:
+                    plt.annotate('', xy = coords[i[1]], xytext = coords[i[0]], arrowprops=dict(arrowstyle="->", color='indigo', alpha = 0.7), zorder = 1)
 
-    # for i in list(result.keys()):
-    #     plt.axhline(y = i, color = 'black', linestyle = '-', linewidth = 0.3, zorder = 0) 
+    for i in list(result.keys()):
+        plt.axhline(y = i, color = 'black', linestyle = '-', linewidth = 0.3, zorder = 0) 
     
-    # if draw_graph == True:
-    #     plt.xlabel('X')
-    #     plt.ylabel('Y')
-    #     plt.xticks([])
-    #     #plt.yticks([])
-    #     plt.show()
-    # else:
-    #     plt.clf()
+    if draw_graph == True:
+        plt.xlabel('X')
+        plt.ylabel('Y')
+        plt.xticks([])
+        #plt.yticks([])
+        plt.show()
+    else:
+        plt.clf()
     return edge_coords, coords
 
-def drawLayered(FILE_NAME, draw_graph, dummies, median=True):
-    
-    FILE_NAME = f'Networks/{FILE_NAME}.dot'
+def drawLayered(FILE_NAME, draw_graph=True, nodummies=False, median=False):
+    if draw_graph:
+        FILE_NAME = f'Networks/{FILE_NAME}.dot'
+
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
 
     adj_test_list = CreateDirectedAdjacencyList(G.get_edge_list())
@@ -304,18 +304,15 @@ def drawLayered(FILE_NAME, draw_graph, dummies, median=True):
     else:
         new_layer_list, crossing_list = reduce_crossings_barycenter(result, layer_list, connections_list)
 
-    if dummies==False:
+    if nodummies:
         connections_list_new = reverse_edges_no_dummies(connections_list, reversed_edges)
     else:
-       connections_list_new = reverse_edges(connections_list, reversed_edges)
+        connections_list_new = reverse_edges(connections_list, reversed_edges)
     
-    coords, node_coords = plot_final_graph(result, new_layer_list, connections_list_new,dummy_variables=dummies, draw_graph=draw_graph)
-
+    coords, node_coords = plot_final_graph(result, new_layer_list, connections_list_new, nodummies, draw_graph)
+    # print(crossing_list)
 
     return coords, node_coords, new_layer_list
-
-# TEST
-#drawLayered(FILE_NAME='LesMiserables', draw_graph=True, dummies=True)
 
 ### ---- QUALITY METRICS ---- ###
 
@@ -332,19 +329,17 @@ def calculate_angle(edge1, edge2, layer_count):
     return angle_deg
 
 def drawLayeredQuality(FILE_NAME):
-    fl = FILE_NAME
-    FILE_NAME = f'Networks/{fl}.dot'
+    FILE_NAME = f'Networks/{FILE_NAME}.dot'
 
     G = pydot.graph_from_dot_file(FILE_NAME)[0]
-    print("drawing the graph.....")
 
     # drawleyered part
     # ---------------------------------------------------------------------------------------------
-    coords, node_coords, new_layer_list = drawLayered(FILE_NAME=fl, dummies = True, draw_graph=False)
+    coords, node_coords, new_layer_list = drawLayered(FILE_NAME, draw_graph=False)
     # ---------------------------------------------------------------------------------------------
 
     X = floyd_warshall(G)
-    print("calculating the quality metrics.....")
+
     coords_list = []
     smallest_angle = 360
     crossing_count = 0
@@ -353,6 +348,8 @@ def drawLayeredQuality(FILE_NAME):
     graph_dist_list = []
     stress = 0 
     normalization = 0
+
+
     # calculate number of crossings and smallest angle
     for edge in coords:
         current_coord = edge
@@ -371,9 +368,7 @@ def drawLayeredQuality(FILE_NAME):
 
 
     # calculate stress
-    no_nodes = 198 # CHANGE NUMBER OF NODES
-    print(len(coords))
-    for i in range(1, no_nodes): 
+    for i in range(1, 78):
         pairs_list.append(node_coords[str(i)])
 
 
@@ -390,9 +385,8 @@ def drawLayeredQuality(FILE_NAME):
         
 
     # plot shepard
-    # plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
-    # plt.show()
-    print("generating quality data.....")
+    plt.scatter(data_dist_list, graph_dist_list, c="red", s=100, zorder=3, alpha=0.4)
+    plt.show()
     spearman_rank = stats.spearmanr(data_dist_list, graph_dist_list)
 
     # normalized stress
@@ -401,13 +395,12 @@ def drawLayeredQuality(FILE_NAME):
     # results
     print("crossing count: ", crossing_count, "smallest angle: ", smallest_angle, "normalized stress: ", norm_stress, 'spearman rank correlation:', spearman_rank.statistic)
 
-# # TEST
-# # #FILE_NAME = 'SmallDirectedNetwork'
-#FILE_NAME = 'LeagueNetwork'
-#FILE_NAME = 'LesMiserables'
-FILE_NAME = 'JazzNetwork'
+# TEST
+# FILE_NAME = 'SmallDirectedNetwork'
+# FILE_NAME = 'LeagueNetwork'
+# FILE_NAME = 'LesMiserables'
 
-# drawLayered(FILE_NAME, nodummies=False, draw_graph=True) 
-drawLayeredQuality(FILE_NAME)
+# drawLayered(FILE_NAME) 
+# drawLayeredQuality(FILE_NAME)
 
 
