@@ -1,4 +1,4 @@
-from Assignments.Assignment_6.MDS import drawMDS
+from MDS import drawMDS
 import matplotlib.pyplot as plt
 from scipy import stats
 from shapely import LineString
@@ -75,4 +75,4 @@ def drawMDSQuality(FILE_NAME):
 # TEST
 # FILE_NAME = 'LesMiserables' #Most suitable, other ones are bad
 
-# drawMDSQuality(FILE_NAME)
+drawMDSQuality('JazzNetwork')

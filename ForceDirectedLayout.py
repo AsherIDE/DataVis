@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
     nodes_dict, edges_list = init_sim(G, init_mode="stoch")
 
-    number_of_sims = 1051
+    number_of_sims = 1
 
     fig, ax = plt.subplots(1, 2, figsize=(10, 6))
     tot_force_plot = []
@@ -325,6 +325,7 @@ for edge in edges_list:
 
 
 # calculate stress of layout
+print("len: ", len(nodes_dict))
 for i in range(1,78):
     x = nodes_dict[str(i)].pos.x
     y = nodes_dict[str(i)].pos.y
